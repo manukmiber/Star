@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "deep_sky_object",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": "string"
+    },
+    "type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "constellation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "messier_number": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  }
+}

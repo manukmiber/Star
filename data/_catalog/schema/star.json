@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "star",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hip": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "hd": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "constellation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "distance_pc": {
+      "$ref": "sourced_value.json"
+    },
+    "apparent_magnitude": {
+      "$ref": "sourced_value.json"
+    },
+    "spectral_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

@@ -28,6 +28,7 @@ class SourceSpec:
     base_url: str
     probe_url: str
     probe_method: str = "GET"
+    probe_timeout: float = 20.0
     license: str | None = None
     notes: str = ""
     requires_credentials: bool = False
@@ -53,7 +54,16 @@ register(SourceSpec(
     base_url="https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
     probe_url="https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
     license="Public domain (NASA)",
-    notes="HTML tables scraped per planet page.",
+    notes="DEAD despite HTTP 200 (verified 2026-08-20 in Fase 3, after Fase 1's probe wrongly "
+    "marked it alive on status code alone): the whole /planetary/factsheet/ path — including "
+    "per-planet pages like marsfact.html — 307-redirects to https://www.nasa.gov/nssdc/, a "
+    "generic 'NSSDC status' landing page with none of the actual fact-sheet data. No live "
+    "replacement URL found for the classic per-planet comparison table. Physical parameters "
+    "for planets are pulled from jpl_horizons's OBJ_DATA instead (already source [A] in the "
+    "brief), which covers the same ground (mass, radius, density, gravity, rotation, etc.) "
+    "straight from JPL. This source is excluded from the build; the raw 2026-08-20 response "
+    "is kept as-is (it's the honest evidence of what the endpoint actually returns) but never "
+    "parsed as fact-sheet content.",
 ))
 register(SourceSpec(
     key="jpl_horizons",
@@ -212,16 +222,26 @@ register(SourceSpec(
     base_url="https://github.com/OpenExoplanetCatalogue/open_exoplanet_catalogue",
     probe_url="https://raw.githubusercontent.com/OpenExoplanetCatalogue/open_exoplanet_catalogue/master/README.md",
     license="MIT (per repo)",
+    notes="No single combined data file — one XML per system (thousands of files) under "
+    "systems/. api.github.com and codeload.github.com are blocked for this session (repo "
+    "not in this session's GitHub scope), so directory listing / tarball download aren't "
+    "reachable here; per-file raw.githubusercontent.com fetches would mean thousands of "
+    "requests at the 1 req/s policy. Skipped in this pull; a proper pull needs either a "
+    "`git clone` step outside this session's GitHub-scope restriction, or the repo added "
+    "to session scope via add_repo.",
 ))
 register(SourceSpec(
     key="exoplanet_eu",
     name="exoplanet.eu catalog (CSV)",
     tier=1,
     category="exoplanets",
-    base_url="http://exoplanet.eu/catalog/csv/",
-    probe_url="http://exoplanet.eu/catalog/csv/",
-    probe_method="HEAD",
+    base_url="https://exoplanet.eu/catalog/csv/",
+    probe_url="https://exoplanet.eu/catalog/csv/",
+    probe_timeout=45.0,
     license="Verify at probe time (exoplanet.eu terms of use)",
+    notes="http:// 301-redirects to https://; the endpoint is alive but slow to fully "
+    "respond (~1.5MB+ received within 25s, still streaming) — needs a generous timeout "
+    "for the real pull in Fase 2, not just the default HTTP client timeout.",
 ))
 
 # ---------------------------------------------------------------------------
@@ -233,10 +253,11 @@ register(SourceSpec(
     tier=1,
     category="stars",
     base_url="https://github.com/astronexus/HYG-Database",
-    probe_url="https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/hyg_v42.csv",
+    probe_url="https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/hygdata_v41.csv",
     probe_method="HEAD",
     license="CC BY-SA 4.0 (per repo)",
-    notes="Starting point for the stars/ tree per the brief.",
+    notes="Starting point for the stars/ tree per the brief. Verified 2026-08-20: current "
+    "file is hygdata_v41.csv (v4.1), not hyg_v42.csv as guessed initially — see CHANGELOG.",
 ))
 register(SourceSpec(
     key="simbad_tap",
@@ -250,7 +271,9 @@ register(SourceSpec(
         "&query=select+top+5+main_id,ra,dec+from+basic"
     ),
     license="CDS — attribution required",
-    notes="Used for targeted cross-match queries, not a full dump.",
+    notes="Used for targeted cross-match queries, not a full dump. `basic` alone is >15M "
+    "rows with unbounded scope, so it's not pulled in Fase 2; Fase 3's crosswalk build "
+    "queries it per-object (by HYG/exoplanet-host name or coordinates) instead.",
 ))
 register(SourceSpec(
     key="gaia_dr3_tap",
@@ -265,7 +288,9 @@ register(SourceSpec(
     ),
     license="ESA/Gaia — attribution required",
     notes="1.8B rows. Default Tier 3 subset: parallax > 10 mas OR phot_g_mean_mag < 12 "
-    "(see brief section 3). Never pulled without explicit go-ahead.",
+    "(see brief section 3). Never pulled without explicit go-ahead. Probe on 2026-08-20 "
+    "got HTTP 503 from the ESA TAP server (likely maintenance/load, not a dead endpoint) "
+    "— re-check before any Tier 3 pull.",
 ))
 register(SourceSpec(
     key="vizier_tap",
@@ -283,13 +308,16 @@ register(SourceSpec(
 ))
 register(SourceSpec(
     key="iau_star_names",
-    name="IAU Catalog of Star Names",
+    name="IAU Catalog of Star Names (IAU-CSN)",
     tier=1,
     category="stars",
-    base_url="https://www.iau.org/public/themes/naming_stars/",
-    probe_url="https://www.iau.org/public/themes/naming_stars/",
-    license="Verify at probe time (IAU terms)",
-    notes="Small, curated list of officially approved star names.",
+    base_url="https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt",
+    probe_url="https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt",
+    license="CC BY (IAU-produced products); cite per file header",
+    notes="The brief's iau.org/public/themes/naming_stars/ page 404s (verified 2026-08-20 — "
+    "see CHANGELOG). Replaced with the machine-readable IAU-CSN maintained by the IAU "
+    "Division C Working Group on Star Names (WGSN) itself, which the iau.org page even "
+    "points to as the canonical data file.",
 ))
 
 # ---------------------------------------------------------------------------
@@ -313,18 +341,27 @@ register(SourceSpec(
     name="SB9: Spectroscopic Binary Orbits",
     tier=1,
     category="multiple_systems",
-    base_url="https://sb9.astro.ulb.ac.be/",
-    probe_url="https://sb9.astro.ulb.ac.be/mainform.cgi",
-    license="Verify at probe time (SB9 terms)",
+    base_url="https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync",
+    probe_url=(
+        "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync"
+        "?request=doQuery&lang=adql&format=csv&query=select+top+5+*+from+\"B/sb9/main\""
+    ),
+    license="CDS — attribution required",
+    notes="ULB's own mainform.cgi is a search-only CGI form with no obvious bulk-export "
+    "URL (verified 2026-08-20). SB9 is mirrored on VizieR as B/sb9/{main,orbits,alias} — "
+    "used instead for the actual pull.",
 ))
 register(SourceSpec(
     key="kepler_eb_catalog",
     name="Kepler Eclipsing Binary Catalog",
     tier=1,
     category="multiple_systems",
-    base_url="http://keplerebs.villanova.edu/",
-    probe_url="http://keplerebs.villanova.edu/results/?q=1",
+    base_url="https://keplerebs.villanova.edu/?format=csv",
+    probe_url="https://keplerebs.villanova.edu/",
     license="Verify at probe time (Villanova KEBC terms)",
+    notes="Plain http:// 400s on this server (verified 2026-08-20 — see CHANGELOG); use "
+    "https://. Full bulk export found: https://keplerebs.villanova.edu/?format=csv "
+    "returns the whole catalog (2920 systems) as one flat CSV — no pagination needed.",
 ))
 register(SourceSpec(
     key="msc_catalog",
@@ -335,9 +372,11 @@ register(SourceSpec(
     probe_url=(
         "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync"
         "?request=doQuery&lang=adql&format=csv"
-        "&query=select+top+5+*+from+\"J/ApJS/235/6/table1\""
+        "&query=select+top+5+*+from+\"J/ApJS/235/6/catalog\""
     ),
     license="CDS — attribution required",
+    notes="Table is J/ApJS/235/6/catalog (there is no 'table1' — verified via TAP_SCHEMA "
+    "2026-08-20, see CHANGELOG). Other tables in this catalog: notes, orbits, systems.",
 ))
 register(SourceSpec(
     key="gaia_dr3_nss",
@@ -352,7 +391,8 @@ register(SourceSpec(
     ),
     license="ESA/Gaia — attribution required",
     notes="~800k rows; smaller than the full Gaia source catalog but still large, "
-    "provisionally Tier 2 pending size confirmation.",
+    "provisionally Tier 2 pending size confirmation. Probe on 2026-08-20 got HTTP 503 "
+    "from the ESA TAP server (same as gaia_dr3_tap) — re-check before pulling.",
 ))
 
 # ---------------------------------------------------------------------------
@@ -398,9 +438,15 @@ register(SourceSpec(
     name="UCS Satellite Database",
     tier=1,
     category="solar_system/artificial_satellites",
-    base_url="https://www.ucsusa.org/resources/satellite-database",
-    probe_url="https://www.ucsusa.org/resources/satellite-database",
+    base_url="https://www.ucs.org/resources/satellite-database",
+    probe_url="https://www.ucs.org/resources/satellite-database",
     license="Verify at probe time (UCS terms of use)",
+    requires_credentials=True,
+    notes="ucsusa.org redirects to ucs.org (verified 2026-08-20). The page no longer links "
+    "a direct .xlsx/.csv download — it now routes to an email opt-in form "
+    "(forms.ucs.org/get-satellite-database-updates/). Treated like a credentialed source "
+    "and skipped rather than scraping a page that isn't the actual dataset; a human would "
+    "need to request the file directly from UCS.",
 ))
 
 # ---------------------------------------------------------------------------

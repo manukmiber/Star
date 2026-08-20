@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "moon",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": "string"
+    },
+    "planet": {
+      "type": "string"
+    },
+    "naif_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "discoverer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "year_discovered": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gm_km3_s2": {
+      "$ref": "sourced_value.json"
+    },
+    "mean_radius_km": {
+      "$ref": "sourced_value.json"
+    },
+    "mass_kg": {
+      "$ref": "sourced_value.json"
+    },
+    "semi_major_axis_km": {
+      "$ref": "sourced_value.json"
+    },
+    "eccentricity": {
+      "$ref": "sourced_value.json"
+    },
+    "orbital_period_days": {
+      "$ref": "sourced_value.json"
+    }
+  }
+}

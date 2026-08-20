@@ -16,6 +16,7 @@ dependencies = [
     "pydantic>=2.7",
     "typer>=0.12",
     "rich>=13.7",
+    "jsonschema>=4.22",
 ]
 
 [project.scripts]
@@ -31,4 +32,9 @@ packages = ["astro_datalake"]
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "respx>=0.21",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
