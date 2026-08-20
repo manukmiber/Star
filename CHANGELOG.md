@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-08-20 — Fase 3-4: Build struktur folder + Verifikasi
+
+Full detail ada di masing-masing pesan commit dan di `REPORT.md`; ringkasan
+di sini:
+
+- `nssdc_planetary_factsheet` ternyata **mati** meski Fase 1 menandainya
+  "hidup": seluruh path `/planetary/factsheet/*` 307-redirect ke halaman
+  generik `nasa.gov/nssdc/`, bukan data fact sheet. Fase 1 hanya cek status
+  code, bukan konten — pelajaran untuk probing endpoint yang redirect.
+  Diganti pakai `jpl_horizons` OBJ_DATA.
+- `.gitignore` punya bug: pola `build/`/`dist/` tanpa leading slash
+  mencocokkan `astro_datalake/build/` juga (bukan cuma direktori artefak
+  packaging di root), jadi modul builder sempat tidak ter-commit padahal
+  jalan lokal. Diperbaiki jadi `/build/`, `/dist/`.
+- `astro verify` menemukan bug schema: `limit_flag` di `sourced_value`
+  diasumsikan string, padahal NASA Exoplanet Archive mengisinya numerik
+  (0/1/-1) — 200/200 sampel `exoplanet_planet.json` gagal validasi sampai
+  skema diperbaiki jadi `number|string|null`.
+- Ditarik tambahan `openngc` + `messier_catalog` (tadinya salah ditandai
+  Tier 3 di registry padahal cuma ~2MB) karena user minta pull semua.
+- Build final: 469 objek solar_system, 465-467 bintang bernama, 6336
+  exoplanet di 4749 folder bintang induk, 1.58 juta objek small-bodies
+  (26530 di antaranya bernama & dapat folder sendiri), 70332 satelit
+  buatan, 14077 objek deep-sky, 168903 baris sistem biner/multiple.
+  Total ~1.9GB. Semua cek `astro verify` lulus setelah fix di atas.
+
 ## 2026-08-20 — Fase 2: Tarik data Tier 1 + Tier 2
 
 Ran `astro pull --all --tier 1` then `astro pull --all --tier 2` (user
