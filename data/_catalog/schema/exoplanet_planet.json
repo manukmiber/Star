@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "exoplanet_planet",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": "string"
+    },
+    "letter": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hostname": {
+      "type": "string"
+    },
+    "discovery_method": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "discovery_year": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "orbital_period_days": {
+      "$ref": "sourced_value.json"
+    },
+    "radius_earth": {
+      "$ref": "sourced_value.json"
+    },
+    "mass_earth": {
+      "$ref": "sourced_value.json"
+    }
+  }
+}

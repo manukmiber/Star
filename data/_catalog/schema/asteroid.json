@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "asteroid",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": "string"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "spkid": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "orbit_class": {
+      "type": "string"
+    },
+    "is_neo": {
+      "type": "boolean"
+    },
+    "is_pha": {
+      "type": "boolean"
+    },
+    "semi_major_axis_au": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "eccentricity": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "planet",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": "string"
+    },
+    "mass_kg": {
+      "$ref": "sourced_value.json"
+    },
+    "vol_mean_radius_km": {
+      "$ref": "sourced_value.json"
+    },
+    "density_g_cm3": {
+      "$ref": "sourced_value.json"
+    },
+    "gm_km3_s2": {
+      "$ref": "sourced_value.json"
+    },
+    "sidereal_rotation_hr": {
+      "$ref": "sourced_value.json"
+    },
+    "sidereal_orbit_period_days": {
+      "$ref": "sourced_value.json"
+    },
+    "data_source": {
+      "type": "string"
+    }
+  }
+}
