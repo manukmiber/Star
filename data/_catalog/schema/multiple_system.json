@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "multiple_system",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": "string"
+    },
+    "wds_designation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "components_in_wds": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "primary_magnitude": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "secondary_magnitude": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "hip": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "identification": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "separation_arcsec": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "tolerance_arcsec": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "method",
+        "separation_arcsec"
+      ]
+    }
+  },
+  "required": [
+    "display_name",
+    "identification"
+  ]
+}
