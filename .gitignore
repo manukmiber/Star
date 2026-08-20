@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+
+# Virtual envs
+.venv/
+venv/
+
+# uv
+uv.lock.bak
+
+# Data lake outputs (raw + processed) — regenerate via `astro pull` / `astro build`
+data/raw/
+data/solar_system/
+data/stars/
+data/multiple_systems/
+data/exoplanets/
+data/deep_sky/
+data/_catalog/*.json
+data/_catalog/*.parquet
+!data/_catalog/schema/
+!data/_catalog/schema/.gitkeep
+
+# Logs
+logs/*.log
+!logs/.gitkeep
+
+# Env / secrets
+.env
+.env.*
+
+# OS
+.DS_Store
