@@ -184,7 +184,7 @@ SCHEMAS = {
             "value": {"type": ["number", "string", "null"]},
             "err_upper": {"type": ["number", "null"]},
             "err_lower": {"type": ["number", "null"]},
-            "limit_flag": {"type": ["string", "null"]},
+            "limit_flag": {"type": ["number", "string", "null"]},
             "ref": {"type": ["string", "null"]},
         },
         "required": ["value"],

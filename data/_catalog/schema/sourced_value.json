@@ -24,6 +24,7 @@
     },
     "limit_flag": {
       "type": [
+        "number",
         "string",
         "null"
       ]
