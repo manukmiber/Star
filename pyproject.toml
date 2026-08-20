@@ -31,4 +31,9 @@ packages = ["astro_datalake"]
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "respx>=0.21",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

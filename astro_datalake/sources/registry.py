@@ -28,6 +28,7 @@ class SourceSpec:
     base_url: str
     probe_url: str
     probe_method: str = "GET"
+    probe_timeout: float = 20.0
     license: str | None = None
     notes: str = ""
     requires_credentials: bool = False
@@ -218,10 +219,13 @@ register(SourceSpec(
     name="exoplanet.eu catalog (CSV)",
     tier=1,
     category="exoplanets",
-    base_url="http://exoplanet.eu/catalog/csv/",
-    probe_url="http://exoplanet.eu/catalog/csv/",
-    probe_method="HEAD",
+    base_url="https://exoplanet.eu/catalog/csv/",
+    probe_url="https://exoplanet.eu/catalog/csv/",
+    probe_timeout=45.0,
     license="Verify at probe time (exoplanet.eu terms of use)",
+    notes="http:// 301-redirects to https://; the endpoint is alive but slow to fully "
+    "respond (~1.5MB+ received within 25s, still streaming) — needs a generous timeout "
+    "for the real pull in Fase 2, not just the default HTTP client timeout.",
 ))
 
 # ---------------------------------------------------------------------------
@@ -233,10 +237,11 @@ register(SourceSpec(
     tier=1,
     category="stars",
     base_url="https://github.com/astronexus/HYG-Database",
-    probe_url="https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/hyg_v42.csv",
+    probe_url="https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/hygdata_v41.csv",
     probe_method="HEAD",
     license="CC BY-SA 4.0 (per repo)",
-    notes="Starting point for the stars/ tree per the brief.",
+    notes="Starting point for the stars/ tree per the brief. Verified 2026-08-20: current "
+    "file is hygdata_v41.csv (v4.1), not hyg_v42.csv as guessed initially — see CHANGELOG.",
 ))
 register(SourceSpec(
     key="simbad_tap",
@@ -265,7 +270,9 @@ register(SourceSpec(
     ),
     license="ESA/Gaia — attribution required",
     notes="1.8B rows. Default Tier 3 subset: parallax > 10 mas OR phot_g_mean_mag < 12 "
-    "(see brief section 3). Never pulled without explicit go-ahead.",
+    "(see brief section 3). Never pulled without explicit go-ahead. Probe on 2026-08-20 "
+    "got HTTP 503 from the ESA TAP server (likely maintenance/load, not a dead endpoint) "
+    "— re-check before any Tier 3 pull.",
 ))
 register(SourceSpec(
     key="vizier_tap",
@@ -283,13 +290,16 @@ register(SourceSpec(
 ))
 register(SourceSpec(
     key="iau_star_names",
-    name="IAU Catalog of Star Names",
+    name="IAU Catalog of Star Names (IAU-CSN)",
     tier=1,
     category="stars",
-    base_url="https://www.iau.org/public/themes/naming_stars/",
-    probe_url="https://www.iau.org/public/themes/naming_stars/",
-    license="Verify at probe time (IAU terms)",
-    notes="Small, curated list of officially approved star names.",
+    base_url="https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt",
+    probe_url="https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt",
+    license="CC BY (IAU-produced products); cite per file header",
+    notes="The brief's iau.org/public/themes/naming_stars/ page 404s (verified 2026-08-20 — "
+    "see CHANGELOG). Replaced with the machine-readable IAU-CSN maintained by the IAU "
+    "Division C Working Group on Star Names (WGSN) itself, which the iau.org page even "
+    "points to as the canonical data file.",
 ))
 
 # ---------------------------------------------------------------------------
@@ -322,9 +332,12 @@ register(SourceSpec(
     name="Kepler Eclipsing Binary Catalog",
     tier=1,
     category="multiple_systems",
-    base_url="http://keplerebs.villanova.edu/",
-    probe_url="http://keplerebs.villanova.edu/results/?q=1",
+    base_url="https://keplerebs.villanova.edu/",
+    probe_url="https://keplerebs.villanova.edu/",
     license="Verify at probe time (Villanova KEBC terms)",
+    notes="Plain http:// 400s on this server (verified 2026-08-20 — see CHANGELOG); use "
+    "https://. The /results/ query endpoint's exact parameter format still needs to be "
+    "worked out from the site's own docs/JS before Fase 2's real downloader is written.",
 ))
 register(SourceSpec(
     key="msc_catalog",
@@ -335,9 +348,11 @@ register(SourceSpec(
     probe_url=(
         "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync"
         "?request=doQuery&lang=adql&format=csv"
-        "&query=select+top+5+*+from+\"J/ApJS/235/6/table1\""
+        "&query=select+top+5+*+from+\"J/ApJS/235/6/catalog\""
     ),
     license="CDS — attribution required",
+    notes="Table is J/ApJS/235/6/catalog (there is no 'table1' — verified via TAP_SCHEMA "
+    "2026-08-20, see CHANGELOG). Other tables in this catalog: notes, orbits, systems.",
 ))
 register(SourceSpec(
     key="gaia_dr3_nss",
@@ -352,7 +367,8 @@ register(SourceSpec(
     ),
     license="ESA/Gaia — attribution required",
     notes="~800k rows; smaller than the full Gaia source catalog but still large, "
-    "provisionally Tier 2 pending size confirmation.",
+    "provisionally Tier 2 pending size confirmation. Probe on 2026-08-20 got HTTP 503 "
+    "from the ESA TAP server (same as gaia_dr3_tap) — re-check before pulling.",
 ))
 
 # ---------------------------------------------------------------------------
