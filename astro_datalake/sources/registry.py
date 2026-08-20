@@ -213,6 +213,13 @@ register(SourceSpec(
     base_url="https://github.com/OpenExoplanetCatalogue/open_exoplanet_catalogue",
     probe_url="https://raw.githubusercontent.com/OpenExoplanetCatalogue/open_exoplanet_catalogue/master/README.md",
     license="MIT (per repo)",
+    notes="No single combined data file — one XML per system (thousands of files) under "
+    "systems/. api.github.com and codeload.github.com are blocked for this session (repo "
+    "not in this session's GitHub scope), so directory listing / tarball download aren't "
+    "reachable here; per-file raw.githubusercontent.com fetches would mean thousands of "
+    "requests at the 1 req/s policy. Skipped in this pull; a proper pull needs either a "
+    "`git clone` step outside this session's GitHub-scope restriction, or the repo added "
+    "to session scope via add_repo.",
 ))
 register(SourceSpec(
     key="exoplanet_eu",
@@ -255,7 +262,9 @@ register(SourceSpec(
         "&query=select+top+5+main_id,ra,dec+from+basic"
     ),
     license="CDS — attribution required",
-    notes="Used for targeted cross-match queries, not a full dump.",
+    notes="Used for targeted cross-match queries, not a full dump. `basic` alone is >15M "
+    "rows with unbounded scope, so it's not pulled in Fase 2; Fase 3's crosswalk build "
+    "queries it per-object (by HYG/exoplanet-host name or coordinates) instead.",
 ))
 register(SourceSpec(
     key="gaia_dr3_tap",
@@ -323,21 +332,27 @@ register(SourceSpec(
     name="SB9: Spectroscopic Binary Orbits",
     tier=1,
     category="multiple_systems",
-    base_url="https://sb9.astro.ulb.ac.be/",
-    probe_url="https://sb9.astro.ulb.ac.be/mainform.cgi",
-    license="Verify at probe time (SB9 terms)",
+    base_url="https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync",
+    probe_url=(
+        "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync"
+        "?request=doQuery&lang=adql&format=csv&query=select+top+5+*+from+\"B/sb9/main\""
+    ),
+    license="CDS — attribution required",
+    notes="ULB's own mainform.cgi is a search-only CGI form with no obvious bulk-export "
+    "URL (verified 2026-08-20). SB9 is mirrored on VizieR as B/sb9/{main,orbits,alias} — "
+    "used instead for the actual pull.",
 ))
 register(SourceSpec(
     key="kepler_eb_catalog",
     name="Kepler Eclipsing Binary Catalog",
     tier=1,
     category="multiple_systems",
-    base_url="https://keplerebs.villanova.edu/",
+    base_url="https://keplerebs.villanova.edu/?format=csv",
     probe_url="https://keplerebs.villanova.edu/",
     license="Verify at probe time (Villanova KEBC terms)",
     notes="Plain http:// 400s on this server (verified 2026-08-20 — see CHANGELOG); use "
-    "https://. The /results/ query endpoint's exact parameter format still needs to be "
-    "worked out from the site's own docs/JS before Fase 2's real downloader is written.",
+    "https://. Full bulk export found: https://keplerebs.villanova.edu/?format=csv "
+    "returns the whole catalog (2920 systems) as one flat CSV — no pagination needed.",
 ))
 register(SourceSpec(
     key="msc_catalog",
@@ -414,9 +429,15 @@ register(SourceSpec(
     name="UCS Satellite Database",
     tier=1,
     category="solar_system/artificial_satellites",
-    base_url="https://www.ucsusa.org/resources/satellite-database",
-    probe_url="https://www.ucsusa.org/resources/satellite-database",
+    base_url="https://www.ucs.org/resources/satellite-database",
+    probe_url="https://www.ucs.org/resources/satellite-database",
     license="Verify at probe time (UCS terms of use)",
+    requires_credentials=True,
+    notes="ucsusa.org redirects to ucs.org (verified 2026-08-20). The page no longer links "
+    "a direct .xlsx/.csv download — it now routes to an email opt-in form "
+    "(forms.ucs.org/get-satellite-database-updates/). Treated like a credentialed source "
+    "and skipped rather than scraping a page that isn't the actual dataset; a human would "
+    "need to request the file directly from UCS.",
 ))
 
 # ---------------------------------------------------------------------------
