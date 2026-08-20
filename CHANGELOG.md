@@ -1,5 +1,37 @@
 # Changelog
 
+## 2026-08-20 — Fase 2: Tarik data Tier 1 + Tier 2
+
+Ran `astro pull --all --tier 1` then `astro pull --all --tier 2` (user
+explicitly approved skipping the Tier 2 "report size, wait for
+confirmation" pause — "gede juga gapapa, langsung pull aja"). Both via
+`astro_datalake/downloaders.py` (new), wired into a now-real `astro pull`
+CLI command (was a stub in Fase 0).
+
+**Tier 1: 32/37 sources pulled, 0 errors, 5 deliberately skipped, ~421MB.**
+**Tier 2: 4/6 sources pulled, 0 errors, 2 deliberately skipped, +~300MB.**
+**Total raw data: ~723MB across 36 source folders.**
+
+Deliberately skipped (documented per-source in `registry.py` notes, not
+silent failures):
+- `simbad_tap`, `vizier_tap` — access points used ad-hoc (crossmatch,
+  per-catalog queries already covered by wds/msc/sb9), not bulk-dumped.
+- `spacetrack`, `ucs_satellite_db` — require credentials/registration not
+  available in this environment.
+- `open_exoplanet_catalogue` — thousands of small per-system XML files on
+  a GitHub repo outside this session's repo-access scope; would also mean
+  thousands of individual 1 req/s requests. Needs a `git clone` done
+  outside this constraint, or the repo added via `add_repo`.
+- `usgs_gazetteer`, `gaia_dr3_nss` — Tier 2 but no download plan written
+  yet (Gazetteer is per-body GIS shapefiles, not a flat table; Gaia NSS
+  blocked by the same ESA 503 as `gaia_dr3_tap`, see Fase 1 notes).
+
+Spot-checked (not fabricated, straight from the live responses):
+HYG = 119,627 rows; `pscomppars` = 6,337 planets; SBDB `MBA.json` returned
+exactly 1,378,000 rows matching its own `count` field (API did not
+truncate); `MPCORB.DAT.gz` passes `gzip -t`.
+
+
 Format: newest entry first. Every dead/changed endpoint discovered during
 probing (Fase 1) or later gets logged here with the date, what was tried,
 and what replaced it (if anything).
