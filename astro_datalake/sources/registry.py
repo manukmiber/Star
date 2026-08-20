@@ -54,7 +54,16 @@ register(SourceSpec(
     base_url="https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
     probe_url="https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
     license="Public domain (NASA)",
-    notes="HTML tables scraped per planet page.",
+    notes="DEAD despite HTTP 200 (verified 2026-08-20 in Fase 3, after Fase 1's probe wrongly "
+    "marked it alive on status code alone): the whole /planetary/factsheet/ path — including "
+    "per-planet pages like marsfact.html — 307-redirects to https://www.nasa.gov/nssdc/, a "
+    "generic 'NSSDC status' landing page with none of the actual fact-sheet data. No live "
+    "replacement URL found for the classic per-planet comparison table. Physical parameters "
+    "for planets are pulled from jpl_horizons's OBJ_DATA instead (already source [A] in the "
+    "brief), which covers the same ground (mass, radius, density, gravity, rotation, etc.) "
+    "straight from JPL. This source is excluded from the build; the raw 2026-08-20 response "
+    "is kept as-is (it's the honest evidence of what the endpoint actually returns) but never "
+    "parsed as fact-sheet content.",
 ))
 register(SourceSpec(
     key="jpl_horizons",

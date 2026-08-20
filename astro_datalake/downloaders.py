@@ -162,9 +162,9 @@ DOWNLOAD_PLAN["jpl_sat_elem"] = static_file(
 DOWNLOAD_PLAN["jpl_sat_discovery"] = static_file(
     "https://ssd.jpl.nasa.gov/sats/discovery.html", "discovery.html"
 )
-DOWNLOAD_PLAN["nssdc_planetary_factsheet"] = static_file(
-    "https://nssdc.gsfc.nasa.gov/planetary/factsheet/", "factsheet.html"
-)
+DOWNLOAD_PLAN["nssdc_planetary_factsheet"] = None  # dead: redirects to a generic NASA
+# landing page, not fact-sheet data — see registry.py notes. Physical parameters come
+# from jpl_horizons instead.
 DOWNLOAD_PLAN["jpl_horizons"] = horizons_bodies(_HORIZONS_MAJOR_BODIES)
 DOWNLOAD_PLAN["sbdb_query_neo"] = sbdb_classes(
     ["IEO", "ATE", "APO", "AMO"],
