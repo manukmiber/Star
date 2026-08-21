@@ -12,12 +12,25 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from ...build.catalog import object_folders
 from ...core.cache import sha256_of_file
 from ...core.config import settings
 
 console = Console()
 
 SAMPLE_SIZE_PER_TYPE = 200
+
+# Which JSON schema validates which leaf file. "planet.json" is deliberately
+# absent: it is used by both solar_system/ (mass_kg, gm_km3_s2, ...) and
+# exoplanets/by_host_star/.../planets/ (hostname, discovery_method, ...) —
+# same filename, different schema (the brief's own naming choice, see
+# build/catalog.py) — so those two are dispatched by path below instead.
+MARKER_TO_SCHEMA = {
+    "moon.json": "moon", "dwarf_planet.json": "planet",
+    "star.json": "star", "host_star.json": "exoplanet_host_star",
+    "asteroid.json": "asteroid", "deep_sky_object.json": "deep_sky_object",
+    "system.json": "multiple_system", "shower.json": "meteor_shower",
+}
 
 
 def _check_checksums() -> tuple[int, list[str]]:
@@ -46,13 +59,14 @@ def _check_master_index_fresh() -> tuple[bool, dict]:
         "planet": "planet.json", "moon": "moon.json", "dwarf_planet": "dwarf_planet.json",
         "star": "star.json", "exoplanet_host_star": "host_star.json",
         "asteroid": "asteroid.json", "deep_sky_object": "deep_sky_object.json",
+        "multiple_system": "system.json", "meteor_shower": "shower.json",
     }
     mismatches = {}
     for obj_type, recorded_paths in index.get("objects", {}).items():
         marker = marker_by_type.get(obj_type)
         if marker is None:
             continue
-        live_count = sum(1 for _ in settings.data_dir.rglob(marker))
+        live_count = len(object_folders(settings.data_dir, marker))
         if live_count != len(recorded_paths):
             mismatches[obj_type] = {"index": len(recorded_paths), "live": live_count}
     return len(mismatches) == 0, mismatches
@@ -88,16 +102,6 @@ def _check_json_schema() -> tuple[int, int, list[str]]:
         schemas[f.stem] = contents
     registry = Registry().with_resources(resources)
 
-    # "planet.json" is used by both solar_system/ (mass_kg, gm_km3_s2, ...) and
-    # exoplanets/by_host_star/.../planets/ (hostname, discovery_method, ...) — same
-    # filename, different schema (matches the brief's own naming choice, see
-    # build/catalog.py). Disambiguate by path, not just filename.
-    marker_to_schema = {
-        "moon.json": "moon", "dwarf_planet.json": "planet",
-        "star.json": "star", "host_star.json": "exoplanet_host_star",
-        "asteroid.json": "asteroid", "deep_sky_object.json": "deep_sky_object",
-    }
-
     validated = 0
     failed = 0
     failures = []
@@ -124,17 +128,17 @@ def _check_json_schema() -> tuple[int, int, list[str]]:
             else:
                 validated += 1
 
-    solar_system_planets = list((settings.data_dir / "solar_system" / "planets").rglob("planet.json"))
+    solar_system_planets = list((settings.data_dir / "solar_system").rglob("planet.json"))
     exoplanet_planets = list((settings.data_dir / "exoplanets").rglob("planet.json"))
     _validate_sample("planet", solar_system_planets)
     _validate_sample("exoplanet_planet", exoplanet_planets)
 
-    for marker, schema_name in marker_to_schema.items():
+    for marker, schema_name in MARKER_TO_SCHEMA.items():
         schema = schemas.get(schema_name)
         if schema is None:
             continue
         validator = Draft202012Validator(schema, registry=registry)
-        files = list(settings.data_dir.rglob(marker))
+        files = [settings.data_dir / f / marker for f in object_folders(settings.data_dir, marker)]
         sample = files if len(files) <= SAMPLE_SIZE_PER_TYPE else random.sample(files, SAMPLE_SIZE_PER_TYPE)
         for f in sample:
             try:
@@ -151,6 +155,46 @@ def _check_json_schema() -> tuple[int, int, list[str]]:
             else:
                 validated += 1
     return validated, failed, failures
+
+
+def _check_attribution() -> tuple[int, list[str]]:
+    """Every folder carrying data must carry its source's attribution too.
+
+    CDS/VizieR, SIMBAD, CelesTrak and the MPC require attribution in derived
+    products; keeping it only in metadata.json meant a folder copied out of
+    the tree lost it. `astro build` stamps README.md, and this check is what
+    stops that from silently regressing.
+    """
+    from ...build.common import ATTRIBUTION_BEGIN, source_keys_of
+
+    missing = []
+    ok = 0
+    for metadata_path in settings.data_dir.rglob("metadata.json"):
+        try:
+            source = json.loads(metadata_path.read_text()).get("source", "")
+        except (json.JSONDecodeError, OSError):
+            continue
+        if not source_keys_of(source):
+            continue  # source isn't a registry key; nothing to attribute
+        readme = metadata_path.parent / "README.md"
+        if readme.exists() and ATTRIBUTION_BEGIN in readme.read_text():
+            ok += 1
+        else:
+            missing.append(str(metadata_path.parent.relative_to(settings.data_dir)))
+    return ok, missing
+
+
+def _check_derived_declared() -> list[str]:
+    """A folder whose contents are computed must say how (`classification_method`)."""
+    undeclared = []
+    for metadata_path in settings.data_dir.rglob("metadata.json"):
+        try:
+            metadata = json.loads(metadata_path.read_text())
+        except (json.JSONDecodeError, OSError):
+            continue
+        if metadata.get("derived_from") and not metadata.get("classification_method"):
+            undeclared.append(str(metadata_path.parent.relative_to(settings.data_dir)))
+    return undeclared
 
 
 def run() -> None:
@@ -171,6 +215,18 @@ def run() -> None:
     validated, failed, schema_failures = _check_json_schema()
     table.add_row("JSON vs schema (sampel)", f"{validated} valid, {failed} gagal")
 
+    attributed, unattributed = _check_attribution()
+    table.add_row(
+        "Atribusi di README tiap folder",
+        f"{attributed} OK" + (f", {len(unattributed)} kurang" if unattributed else ""),
+    )
+
+    undeclared = _check_derived_declared()
+    table.add_row(
+        "Data turunan menyebut metodenya",
+        "semua" if not undeclared else f"{len(undeclared)} folder tanpa classification_method",
+    )
+
     console.print(table)
 
     if ck_bad:
@@ -185,8 +241,19 @@ def run() -> None:
         console.print("\n[red]Kegagalan schema (contoh):[/red]")
         for msg in schema_failures[:10]:
             console.print(f"  - {msg}")
+    if unattributed:
+        console.print("\n[yellow]Folder tanpa blok atribusi di README (contoh):[/yellow]")
+        for msg in unattributed[:10]:
+            console.print(f"  - {msg}")
+    if undeclared:
+        console.print("\n[yellow]Folder turunan tanpa classification_method (contoh):[/yellow]")
+        for msg in undeclared[:10]:
+            console.print(f"  - {msg}")
 
-    problems = len(ck_bad) + (0 if fresh else 1) + len(empty) + failed
+    problems = (
+        len(ck_bad) + (0 if fresh else 1) + len(empty) + failed
+        + len(unattributed) + len(undeclared)
+    )
     if problems:
         console.print(f"\n[yellow]{problems} masalah ditemukan.[/yellow]")
         raise typer.Exit(code=1)
