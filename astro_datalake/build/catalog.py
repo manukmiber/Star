@@ -29,13 +29,21 @@ LEAF_MARKERS = {
     "host_star.json": "exoplanet_host_star",
     "asteroid.json": "asteroid",
     "deep_sky_object.json": "deep_sky_object",
+    "model_3d.json": "model_3d",
 }
 
 
 def build_master_index(data_root: Path) -> dict:
     index: dict[str, list[str]] = {}
     for marker, obj_type in LEAF_MARKERS.items():
-        paths = sorted(str(p.parent.relative_to(data_root)) for p in data_root.rglob(marker))
+        # _catalog/schema/ holds the JSON Schemas, whose filenames deliberately
+        # match the leaf markers (planet.json, model_3d.json, ...) — they are not
+        # objects and must never be indexed as such.
+        paths = sorted(
+            str(p.parent.relative_to(data_root))
+            for p in data_root.rglob(marker)
+            if "_catalog" not in p.parts
+        )
         index[obj_type] = paths
     write_json(data_root / "_catalog" / "master_index.json", {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -177,6 +185,22 @@ SCHEMAS = {
             "constellation": {"type": ["string", "null"]},
             "messier_number": {"type": ["integer", "null"]},
         },
+    },
+    "model_3d": {
+        "type": "object",
+        "properties": {
+            "display_name": {"type": "string"},
+            "category": {"type": "string"},
+            "object_type": {"type": ["string", "null"]},
+            "classified_by": {"type": "string"},
+            "file_count": {"type": "integer"},
+            "has_mesh": {"type": "boolean"},
+            "has_texture": {"type": "boolean"},
+            "formats": {"type": "array", "items": {"type": "string"}},
+            "sources": {"type": "array", "items": {"type": "object"}},
+            "files": {"type": "array", "items": {"type": "object"}},
+        },
+        "required": ["display_name", "category", "files"],
     },
     "sourced_value": {
         "type": "object",

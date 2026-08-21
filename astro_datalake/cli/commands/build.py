@@ -2,7 +2,7 @@
 
 Runs every builder in astro_datalake/build/ in order (solar system, stars,
 exoplanets, multiple systems, small bodies, artificial satellites, deep
-sky), then the _catalog/ builders (master_index, sources.json, crosswalk,
+sky, 3D models), then the _catalog/ builders (master_index, sources.json, crosswalk,
 schema). Idempotent: builders always overwrite processed/ from raw/, never
 the other way around, so this is always safe to re-run.
 """
@@ -27,6 +27,7 @@ BUILDERS = [
     ("small_bodies", "small_bodies", "solar_system/small_bodies"),
     ("satellites", "artificial_satellites", "solar_system/artificial_satellites"),
     ("deep_sky", "deep_sky", "deep_sky"),
+    ("models_3d", "models_3d", "models_3d"),
 ]
 
 

@@ -67,7 +67,7 @@ def run() -> None:
     )
 
     processed_dirs = [
-        "solar_system", "stars", "multiple_systems", "exoplanets", "deep_sky",
+        "solar_system", "stars", "multiple_systems", "exoplanets", "deep_sky", "models_3d",
     ]
     console.print("\n[bold]Struktur processed:[/bold]")
     for name in processed_dirs:

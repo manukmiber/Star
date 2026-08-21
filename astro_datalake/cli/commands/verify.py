@@ -20,6 +20,13 @@ console = Console()
 SAMPLE_SIZE_PER_TYPE = 200
 
 
+def _leaf_files(root: Path, marker: str) -> list[Path]:
+    """Object leaves named `marker`, minus _catalog/schema/ — the schema files
+    are deliberately named after the markers they describe, so a plain rglob
+    would validate every schema against itself."""
+    return [p for p in root.rglob(marker) if "_catalog" not in p.parts]
+
+
 def _check_checksums() -> tuple[int, list[str]]:
     ok = 0
     bad = []
@@ -37,6 +44,40 @@ def _check_checksums() -> tuple[int, list[str]]:
     return ok, bad
 
 
+def _check_stream_manifests(sample_per_manifest: int = 40) -> tuple[int, int, list[str]]:
+    """Checksum-check files listed in data/raw/**/manifest.json.
+
+    Binary asset trees pulled by astro_datalake.models3d record their checksums
+    in one manifest instead of a .sha256 per file (a git checkout must stay
+    clean), so they need their own check. Sampled: these manifests cover
+    thousands of files and several GB.
+    """
+    checked = 0
+    manifests = 0
+    problems: list[str] = []
+    for manifest_path in sorted(settings.raw_dir.rglob("manifest.json")):
+        try:
+            manifest = json.loads(manifest_path.read_text())
+        except json.JSONDecodeError as exc:
+            problems.append(f"{manifest_path}: JSON tidak valid ({exc})")
+            continue
+        files = manifest.get("files") or []
+        if not files:
+            continue
+        manifests += 1
+        sample = files if len(files) <= sample_per_manifest else random.sample(files, sample_per_manifest)
+        for record in sample:
+            path = manifest_path.parent / record["path"]
+            if not path.exists():
+                problems.append(f"{path}: tercatat di manifest tapi file-nya tidak ada")
+                continue
+            if sha256_of_file(path) != record.get("sha256"):
+                problems.append(f"{path}: checksum tidak cocok dengan manifest")
+                continue
+            checked += 1
+    return manifests, checked, problems
+
+
 def _check_master_index_fresh() -> tuple[bool, dict]:
     idx_path = settings.catalog_dir / "master_index.json"
     if not idx_path.exists():
@@ -46,13 +87,14 @@ def _check_master_index_fresh() -> tuple[bool, dict]:
         "planet": "planet.json", "moon": "moon.json", "dwarf_planet": "dwarf_planet.json",
         "star": "star.json", "exoplanet_host_star": "host_star.json",
         "asteroid": "asteroid.json", "deep_sky_object": "deep_sky_object.json",
+        "model_3d": "model_3d.json",
     }
     mismatches = {}
     for obj_type, recorded_paths in index.get("objects", {}).items():
         marker = marker_by_type.get(obj_type)
         if marker is None:
             continue
-        live_count = sum(1 for _ in settings.data_dir.rglob(marker))
+        live_count = len(_leaf_files(settings.data_dir, marker))
         if live_count != len(recorded_paths):
             mismatches[obj_type] = {"index": len(recorded_paths), "live": live_count}
     return len(mismatches) == 0, mismatches
@@ -96,6 +138,7 @@ def _check_json_schema() -> tuple[int, int, list[str]]:
         "moon.json": "moon", "dwarf_planet.json": "planet",
         "star.json": "star", "host_star.json": "exoplanet_host_star",
         "asteroid.json": "asteroid", "deep_sky_object.json": "deep_sky_object",
+        "model_3d.json": "model_3d",
     }
 
     validated = 0
@@ -124,8 +167,8 @@ def _check_json_schema() -> tuple[int, int, list[str]]:
             else:
                 validated += 1
 
-    solar_system_planets = list((settings.data_dir / "solar_system" / "planets").rglob("planet.json"))
-    exoplanet_planets = list((settings.data_dir / "exoplanets").rglob("planet.json"))
+    solar_system_planets = _leaf_files(settings.data_dir / "solar_system" / "planets", "planet.json")
+    exoplanet_planets = _leaf_files(settings.data_dir / "exoplanets", "planet.json")
     _validate_sample("planet", solar_system_planets)
     _validate_sample("exoplanet_planet", exoplanet_planets)
 
@@ -134,7 +177,7 @@ def _check_json_schema() -> tuple[int, int, list[str]]:
         if schema is None:
             continue
         validator = Draft202012Validator(schema, registry=registry)
-        files = list(settings.data_dir.rglob(marker))
+        files = _leaf_files(settings.data_dir, marker)
         sample = files if len(files) <= SAMPLE_SIZE_PER_TYPE else random.sample(files, SAMPLE_SIZE_PER_TYPE)
         for f in sample:
             try:
@@ -162,6 +205,9 @@ def run() -> None:
     ck_ok, ck_bad = _check_checksums()
     table.add_row("Checksum raw/", f"{ck_ok} OK, {len(ck_bad)} bermasalah")
 
+    manifests, manifest_ok, manifest_bad = _check_stream_manifests()
+    table.add_row("Manifest raw/ (sampel)", f"{manifests} manifest, {manifest_ok} file OK, {len(manifest_bad)} bermasalah")
+
     fresh, mismatches = _check_master_index_fresh()
     table.add_row("master_index.json vs live", "cocok" if fresh else f"{len(mismatches)} tipe tidak cocok: {mismatches}")
 
@@ -173,6 +219,10 @@ def run() -> None:
 
     console.print(table)
 
+    if manifest_bad:
+        console.print("\n[red]Manifest bermasalah (contoh):[/red]")
+        for msg in manifest_bad[:10]:
+            console.print(f"  - {msg}")
     if ck_bad:
         console.print("\n[red]Checksum bermasalah (contoh):[/red]")
         for msg in ck_bad[:10]:
@@ -186,7 +236,7 @@ def run() -> None:
         for msg in schema_failures[:10]:
             console.print(f"  - {msg}")
 
-    problems = len(ck_bad) + (0 if fresh else 1) + len(empty) + failed
+    problems = len(ck_bad) + len(manifest_bad) + (0 if fresh else 1) + len(empty) + failed
     if problems:
         console.print(f"\n[yellow]{problems} masalah ditemukan.[/yellow]")
         raise typer.Exit(code=1)
