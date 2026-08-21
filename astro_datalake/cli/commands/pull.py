@@ -20,12 +20,17 @@ from ...core.cache import is_cached, write_raw
 from ...core.config import settings
 from ...core.http import make_client
 from ...downloaders import DOWNLOAD_PLAN
+from ...models3d import STREAM_PLAN
+from ...models3d.stream import raw_dest
 from ...sources.registry import SOURCES
 
 console = Console()
 
 
 async def _pull_one(client, key: str) -> dict:
+    if key in STREAM_PLAN:
+        return await _pull_stream(client, key)
+
     fetcher = DOWNLOAD_PLAN.get(key)
     if fetcher is None:
         return {"key": key, "status": "skipped", "detail": "belum ada download plan (lihat notes di registry.py)"}
@@ -49,6 +54,22 @@ async def _pull_one(client, key: str) -> dict:
         "status": "ok",
         "detail": f"{written} file baru, {cached} sudah ter-cache (checksum cocok)",
     }
+
+
+async def _pull_stream(client, key: str) -> dict:
+    """models_3d sources: binary asset trees, written to disk by the fetcher itself."""
+    fetcher = STREAM_PLAN.get(key)
+    if fetcher is None:
+        return {"key": key, "status": "skipped", "detail": "sengaja tidak ditarik (lihat notes di registry.py)"}
+
+    dest = raw_dest(key)
+    try:
+        report = await fetcher(client, dest)
+    except Exception as exc:  # noqa: BLE001 - one bad source must not kill the batch
+        return {"key": key, "status": "error", "detail": f"{type(exc).__name__}: {exc}"}
+
+    status = "error" if report.errors and not report.downloaded and not report.cached else "ok"
+    return {"key": key, "status": status, "detail": report.detail()}
 
 
 async def _pull_many(keys: list[str]) -> list[dict]:

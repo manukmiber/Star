@@ -30,6 +30,7 @@ from astro_datalake.build.small_bodies import (
     _parse_mdc,
 )
 from astro_datalake.downloaders import DOWNLOAD_PLAN
+from astro_datalake.models3d import STREAM_PLAN
 from astro_datalake.sources.registry import SOURCES
 
 
@@ -40,14 +41,22 @@ def test_every_source_is_wired_to_a_download_plan_or_explicit_none():
     """A registered source must be either downloadable or deliberately not.
 
     A missing key means `astro pull` silently reports 'skipped' for a source
-    nobody decided to skip.
+    nobody decided to skip. Tabular sources live in DOWNLOAD_PLAN, binary
+    mesh/texture trees in models3d.STREAM_PLAN — either counts, neither being
+    present does not.
     """
+    planned = set(DOWNLOAD_PLAN) | set(STREAM_PLAN)
     for key in SOURCES:
-        assert key in DOWNLOAD_PLAN, f"{key} has no DOWNLOAD_PLAN entry (not even None)"
+        assert key in planned, f"{key} has no DOWNLOAD_PLAN/STREAM_PLAN entry (not even None)"
+
+
+def test_a_source_is_wired_to_exactly_one_plan():
+    overlap = set(DOWNLOAD_PLAN) & set(STREAM_PLAN)
+    assert not overlap, f"pulled twice, by two different mechanisms: {sorted(overlap)}"
 
 
 def test_download_plan_has_no_stray_keys():
-    for key in DOWNLOAD_PLAN:
+    for key in set(DOWNLOAD_PLAN) | set(STREAM_PLAN):
         assert key in SOURCES, f"{key} is downloadable but not registered"
 
 

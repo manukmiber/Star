@@ -1,5 +1,112 @@
 # Changelog
 
+## 2026-08-21 — Fase 8: Model 3D + tekstur (`data/models_3d/`)
+
+Permintaan: "download semua 3D model yang tersedia, bahkan texture kalau
+tersedia — satelit buatan manusia (Hubble, JWST, dll), komet, bintang, dll".
+
+Delapan sumber baru terdaftar di `registry.py` (kategori `models_3d/*`), enam
+di antaranya benar-benar ditarik lewat mekanisme baru: **stream fetcher**
+(`astro_datalake/models3d/`). Berbeda dari `DOWNLOAD_PLAN` yang menahan
+seluruh respons di memori, fetcher ini menulis langsung ke disk sambil
+menghitung checksum — arsip DAMIT saja 1,3 GB, dan yang dilewati karena batas
+ukuran ada yang 2,4 GB; tidak masuk akal di-buffer di memori.
+
+**Yang ditarik:**
+
+| Sumber | Hasil |
+|---|---|
+| `nasa_3d_resources` (GitHub, commit `11ebb4e`) | 1199 file, 4,7 GB — 227 model, 108 model cetak, 50 set tekstur |
+| `pds_sbn_shape_models` | 241 file, 6,2 GB — 64 objek (5 komet, 36 asteroid, 23 satelit alami) |
+| `damit_shape_models` | 1 arsip, 1,3 GB — 10.757 asteroid / 16.105 model bentuk |
+| `nasa_science_3d` | 216 item katalog, 461 file, 1,3 GB (STL cetak + deskripsi) |
+| `nasa_svs_texture_kits` | 19 file, 1,8 GB — CGI Moon Kit (LROC color + LOLA displacement) |
+| `nasa_blue_marble_textures` | 25 file, 36 MB — tekstur Bumi Blue Marble |
+
+**Temuan endpoint (semua diverifikasi 2026-08-21):**
+
+- **`nasa3d.arc.nasa.gov` sudah mati** — 301 ke `science.nasa.gov/3d-resources/`,
+  dan halaman itu sendiri menunjuk balik ke repo GitHub `nasa/NASA-3D-Resources`.
+  Jadi repo-nya yang di-clone; situs barunya tetap ditarik terpisah karena
+  memuat STL cetak + deskripsi yang TIDAK ada di repo.
+- Listing HTML `science.nasa.gov/3d-resources/` **mengabaikan** `current_page`
+  dan `number_of_items` (selalu 15 item halaman pertama). Yang bisa dipaginasi
+  cuma REST-nya: `wp-json/smd/v1/content-list` (`order` harus `ASC`/`DESC`
+  huruf besar, kalau tidak 400).
+- Katalog PDS SBN ada di **JavaScript**, bukan HTML: `js/app.Data.js` +
+  `js/app.Datasets.js`, dengan referensi antar-file (`Hudson.basepath + '…'`)
+  yang harus di-resolve. Parser-nya di `models3d/sbn.py`.
+- Link relatif di katalog itu ditulis relatif ke `/pds/`, bukan ke halamannya.
+  Kalau di-resolve ke halaman, server membalas **HTTP 200 + HTML shell**, bukan
+  404 — jadi fetcher mengecek isi file (magic bytes), bukan status code.
+- `sbn.psi.edu` juga punya link mati beneran (6 URL 404) dan satu typo di
+  sumbernya (`'Hudson.basepath' + '…'`, nama const ikut di dalam kutip).
+  Semua dicatat di `manifest.json`, tidak disamarkan.
+- `science.nasa.gov` sendiri menaut 22 file yang 404 di CDN-nya.
+- `www.darts.isas.jaxa.jp` (shape model Ryugu dari Hayabusa2) **diblokir
+  network policy environment ini** (CONNECT ditolak 502 oleh proxy) — bukan
+  masalah endpoint.
+- `solarsystemscope.com` (tekstur CC BY 4.0) **seluruhnya di balik captcha
+  bot-gate**: `/textures/` dan URL unduhan langsung sama-sama membalas HTTP 202
+  berisi redirect ke `/.well-known/sgcaptcha/`. Tidak ditembus; tekstur setara
+  diambil dari NASA.
+- `astrogeology.usgs.gov` punya JSON search (1643 entri) tapi file mosaiknya
+  ada di resource CKAN per-dataset dan berukuran puluhan–ratusan GB per body —
+  didaftarkan sebagai Tier 3 dan tidak ditarik (sama seperti `usgs_gazetteer`).
+- SVS `/api/search/?q=…` **mengabaikan `q`** (selalu mengembalikan seluruh
+  10.554 item), jadi halaman texture kit disebut per-ID, bukan hasil pencarian.
+
+**Build (`astro build` → `data/models_3d/`):** 382 objek dalam 11 kategori, 2192
+file, 15,9 GB "logis" — tapi aset-nya hardlink ke `data/raw/`, jadi tambahan disk
+sebenarnya cuma hasil ekstraksi arsip. Ditambah `asteroids/_damit/`: 80.511 file
+(10.757 asteroid, 16.105 model bentuk).
+
+Rincian: 333 objek punya mesh, 368 punya tekstur; 1280 file mesh, 805 tekstur,
+29 arsip sumber. Format terbanyak: 516 GLB, 484 STL, 421 PNG, 204 JPG, 127 TIF,
+72 LWO, 57 OBJ, 56 TAB (PDS), 44 USDZ, 20 BDS, 14 BLEND. Per sumber: 1647 file
+dari `nasa_3d_resources`, 260 `nasa_science_3d`, 241 `pds_sbn_shape_models`,
+25 Blue Marble, 19 SVS.
+
+- Aset di-**hardlink**, tidak disalin.
+- Arsip `.7z` bawaan NASA (29 buah, 2,0 GB terekstrak) dibongkar ke
+  `<nama>_extracted/` — di dalamnya ada 128 JPG + 60 TIF tekstur, scene
+  LightWave/Maya/3ds Max, dan STL tambahan yang kalau dibiarkan terkompresi
+  tidak kelihatan sama sekali. Butuh dependensi baru: `py7zr`.
+- Kategori: tipe dari PDS SBN dipakai apa adanya; katalog NASA cuma punya nama
+  folder, jadi ditebak lewat aturan regex dan **tebakan itu ditulis di field
+  `classified_by`** tiap `model_3d.json`, bukan disamarkan jadi fakta sumber.
+- Objek yang sama dari beberapa sumber digabung ke satu folder: mis.
+  `spacecraft/hubble_space_telescope/` memuat GLB varian A + B, arsip sumber
+  varian B, dan 7 STL cetak, semuanya dengan checksum + atribusi per file.
+
+Cakupan yang diminta, konkretnya: satelit/wahana buatan manusia 182 objek
+(Hubble, JWST, Cassini, Voyager, Juno, Kepler, Chandra, Rosetta, Parker Solar
+Probe, ISS, Curiosity/Perseverance, dst.) plus 40 objek perangkat darat; komet
+5 (67P, Wild 2, Hartley 2, Tempel 1, Halley); asteroid 37 objek bernama +
+10.757 dari DAMIT; bulan 47; planet 8; bintang 3 (BP Tauri, DG Tau, U Scorpii)
+plus 3 peta bintang seluruh langit (Hipparcos, Tycho, Yale Bright Star); objek
+deep-sky 17; fitur permukaan 36.
+
+Tiap folder objek juga menulis `metadata.json` + blok atribusi standar
+(`attribution_block()` dari Fase 6) di README-nya, jadi cek "Atribusi di README
+tiap folder" milik `astro verify` ikut mencakup `models_3d/` — naik dari 10
+folder terperiksa jadi 403. Ini penting khusus untuk DAMIT yang CC BY:
+atribusinya wajib ikut di produk turunan.
+
+**Satu lubang cek ditutup:**
+
+- `astro verify` tidak punya cek apa pun untuk sumber yang checksum-nya
+  disimpan di `manifest.json` (bukan sidecar `.sha256` per file, yang akan
+  mengotori working tree hasil `git clone`). Sekarang ada cek manifest
+  tersampel.
+
+Catatan: cabang ini dibuat dari Fase 7 dan sempat memperbaiki sendiri bug
+`build_master_index()` yang menghitung `data/_catalog/schema/*.json` sebagai
+objek (ketahuan karena skema `model_3d` punya `required`, sehingga file
+skemanya sendiri gagal divalidasi sebagai instance). Ternyata Fase 5 sudah
+memperbaikinya lebih dulu lewat `object_folders()`; versi duplikat di cabang
+ini dibuang saat merge `main`.
+
 ## 2026-08-20 — Fase 5: Menutup gap yang tercatat di REPORT.md §5
 
 Fokusnya satu: bagian yang Fase 3-4 tinggalkan sebagai "belum dibangun".

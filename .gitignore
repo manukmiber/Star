@@ -21,6 +21,7 @@ data/stars/
 data/multiple_systems/
 data/exoplanets/
 data/deep_sky/
+data/models_3d/
 data/_catalog/*.json
 data/_catalog/*.parquet
 !data/_catalog/schema/

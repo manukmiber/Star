@@ -46,6 +46,7 @@ LEAF_MARKERS = {
     "deep_sky_object.json": "deep_sky_object",
     "system.json": "multiple_system",
     "shower.json": "meteor_shower",
+    "model_3d.json": "model_3d",
 }
 
 
@@ -302,6 +303,22 @@ SCHEMAS = {
             "constellation": {"type": ["string", "null"]},
             "messier_number": {"type": ["integer", "null"]},
         },
+    },
+    "model_3d": {
+        "type": "object",
+        "properties": {
+            "display_name": {"type": "string"},
+            "category": {"type": "string"},
+            "object_type": {"type": ["string", "null"]},
+            "classified_by": {"type": "string"},
+            "file_count": {"type": "integer"},
+            "has_mesh": {"type": "boolean"},
+            "has_texture": {"type": "boolean"},
+            "formats": {"type": "array", "items": {"type": "string"}},
+            "sources": {"type": "array", "items": {"type": "object"}},
+            "files": {"type": "array", "items": {"type": "object"}},
+        },
+        "required": ["display_name", "category", "files"],
     },
     "multiple_system": {
         "type": "object",

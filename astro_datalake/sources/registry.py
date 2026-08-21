@@ -575,6 +575,129 @@ register(SourceSpec(
     "file instead of mislabelling them.",
 ))
 
+# ---------------------------------------------------------------------------
+# [J] Model 3D & tekstur (Fase 8)
+#
+# Kategori "models_3d/*". Berbeda dari sumber lain di file ini, isinya file
+# biner (mesh + tekstur), bukan tabel — jadi ditarik lewat stream fetcher di
+# astro_datalake/models3d/ (tulis langsung ke disk), bukan DOWNLOAD_PLAN.
+# ---------------------------------------------------------------------------
+register(SourceSpec(
+    key="nasa_3d_resources",
+    name="NASA 3D Resources (model, tekstur, model cetak 3D)",
+    tier=2,
+    category="models_3d/nasa",
+    base_url="https://github.com/nasa/NASA-3D-Resources",
+    probe_url="https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/meta.json",
+    license="Public domain / NASA Open Source Agreement v1.3 (lihat meta.json + usage guidelines repo)",
+    notes="Situs lama nasa3d.arc.nasa.gov sudah mati — 301 ke science.nasa.gov/3d-resources/ "
+    "(diverifikasi 2026-08-21), dan halaman itu sendiri menunjuk balik ke repo GitHub ini "
+    "sebagai sumber file. Jadi repo-nya yang ditarik (git clone --depth 1), bukan situsnya. "
+    "~4,6 GB, 1199 file, 3 direktori: '3D Models' (227 objek: Hubble, JWST, Cassini, Voyager, "
+    "Juno, Kepler, Chandra, Rosetta, ISS, rover, dst.), '3D Printing' (108 objek: STL siap "
+    "cetak, termasuk komet/asteroid), 'Images and Textures' (50 set: tekstur planet, bulan, "
+    "dan peta bintang Tycho/Hipparcos/Yale). Tier 2 karena ukurannya.",
+))
+register(SourceSpec(
+    key="nasa_science_3d",
+    name="NASA Science 3D Resources (halaman per-model + aset STL/GLB)",
+    tier=1,
+    category="models_3d/nasa",
+    base_url="https://science.nasa.gov/3d-resources/",
+    probe_url="https://science.nasa.gov/wp-json/smd/v1/content-list?science_org=6504&number_of_items=1&current_page=1&post_types=any&response_format=json",
+    license="Public domain (NASA), lihat NASA media usage guidelines",
+    notes="Katalog resmi pengganti nasa3d.arc.nasa.gov. Daftar item diambil dari REST WordPress "
+    "science.nasa.gov (smd/v1/content-list, science_org=6504) — endpoint HTML-nya mengabaikan "
+    "current_page/number_of_items sehingga tidak bisa dipaginasi, endpoint JSON-nya bisa. "
+    "Tiap halaman detail memuat file di assets.science.nasa.gov (STL per-bagian untuk model "
+    "cetak, PNG pratinjau) yang TIDAK selalu ada di repo GitHub, jadi sumber ini bukan duplikat "
+    "nasa_3d_resources. Deskripsi per-model dari sini dipakai sebagai metadata di data/models_3d/.",
+))
+register(SourceSpec(
+    key="pds_sbn_shape_models",
+    name="PDS Small Bodies Node — shape model komet, asteroid, satelit",
+    tier=1,
+    category="models_3d/small_bodies",
+    base_url="https://sbn.psi.edu/pds/shape-models/",
+    probe_url="https://sbn.psi.edu/pds/shape-models/js/app.Data.js",
+    license="Public domain (NASA PDS); tiap dataset punya referensi/atribusi sendiri di dataset.html-nya",
+    notes="Katalog shape model-nya ada di app.Data.js (halaman itu sendiri di-render JS, jadi "
+    "HTML-nya kosong). 63 objek: 5 komet (67P/Churyumov-Gerasimenko, 81P/Wild 2, 103P/Hartley 2, "
+    "9P/Tempel 1, 1P/Halley), 36 asteroid (Bennu, Ryugu, Itokawa, Eros, Vesta, Ceres, Apophis, "
+    "Arrokoth, dst.), 22 satelit alami. Format: OBJ turunan + file primer PDS (WRL/TAB/BDS) + "
+    "pratinjau PNG + USDZ untuk sebagian.",
+))
+register(SourceSpec(
+    key="damit_shape_models",
+    name="DAMIT — Database of Asteroid Models from Inversion Techniques",
+    tier=2,
+    category="models_3d/small_bodies",
+    base_url="https://damit.cuni.cz/projects/damit/",
+    probe_url="https://damit.cuni.cz/projects/damit/exports",
+    license="CC BY 4.0 (atribusi ke DAMIT / Durech et al. wajib)",
+    notes="Export lengkap satu file tar.gz (~1,32 GB) berisi ribuan model bentuk asteroid hasil "
+    "inversi kurva cahaya, plus tabel CSV-nya. URL 'latest' stabil: "
+    "/projects/damit/exports/complete/latest. Tier 2 karena ukurannya.",
+))
+register(SourceSpec(
+    key="nasa_svs_texture_kits",
+    name="NASA Scientific Visualization Studio — CGI texture kit",
+    tier=2,
+    category="models_3d/textures",
+    base_url="https://svs.gsfc.nasa.gov/",
+    probe_url="https://svs.gsfc.nasa.gov/api/4720/",
+    license="Public domain (NASA/GSFC SVS), atribusi diminta",
+    notes="Yang ditarik: CGI Moon Kit (halaman 4720) — peta warna LROC + displacement LOLA "
+    "beresolusi tinggi untuk merender Bulan. Halaman SVS lain tidak bisa dicari otomatis: "
+    "endpoint /api/search/ mengabaikan parameter q (selalu mengembalikan seluruh 10.554 item, "
+    "diverifikasi 2026-08-21), jadi ID halaman disebut eksplisit, bukan hasil pencarian. "
+    "File di atas MAX_TEXTURE_BYTES (lihat models3d/plan.py) dilewati dan dicatat.",
+))
+register(SourceSpec(
+    key="nasa_blue_marble_textures",
+    name="NASA Earth Observatory — koleksi Blue Marble",
+    tier=1,
+    category="models_3d/textures",
+    base_url="https://science.nasa.gov/earth/earth-observatory/collections/blue-marble/",
+    probe_url="https://science.nasa.gov/earth/earth-observatory/collections/blue-marble/",
+    license="Public domain (NASA Earth Observatory), atribusi diminta",
+    notes="visibleearth.nasa.gov/collection/1484 sekarang 301 ke halaman koleksi di "
+    "science.nasa.gov (diverifikasi 2026-08-21). Halaman koleksinya sendiri cuma indeks — "
+    "file gambarnya ada di halaman-halaman fitur yang ditautkannya, dilayani dari "
+    "assets.science.nasa.gov (path eoimages.gsfc.nasa.gov yang lama sudah tidak ditaut, dan "
+    "direktorinya tidak bisa di-listing). Halaman fitur yang di-crawl disebut eksplisit di "
+    "models3d/plan.py, dibatasi ke aset ber-path 'bluemarble' supaya tidak menyeret gambar "
+    "artikel Earth Observatory lain.",
+))
+register(SourceSpec(
+    key="usgs_planetary_mosaics",
+    name="USGS Astrogeology Astropedia — mosaik global planet/bulan",
+    tier=3,
+    category="models_3d/textures",
+    base_url="https://astrogeology.usgs.gov/search",
+    probe_url="https://astrogeology.usgs.gov/search/results?q=global+mosaic",
+    license="Public domain (USGS/NASA), atribusi per-produk",
+    notes="TIDAK ditarik. /search/results memang mengembalikan JSON (1643 entri), tapi tiap "
+    "entri hanya memberi slug + halaman HTML yang di-render JS; link file sebenarnya ada di "
+    "resource CKAN per-dataset, dan satu mosaik global bisa puluhan sampai ratusan GB "
+    "(GeoTIFF, resolusi meter). Perlu downloader khusus + pilihan resolusi, dan tetap di luar "
+    "kuota disk sesi ini — sama alasannya dengan usgs_gazetteer.",
+))
+register(SourceSpec(
+    key="solarsystemscope_textures",
+    name="Solar System Scope — tekstur planet & Matahari (CC BY 4.0)",
+    tier=1,
+    category="models_3d/textures",
+    base_url="https://www.solarsystemscope.com/textures/",
+    probe_url="https://www.solarsystemscope.com/textures/",
+    license="CC BY 4.0 (per halaman sumber)",
+    notes="TIDAK bisa ditarik: seluruh domain di balik captcha bot-gate. Halaman /textures/ dan "
+    "URL unduhan langsung sama-sama membalas HTTP 202 berisi redirect ke "
+    "/.well-known/sgcaptcha/ (diverifikasi 2026-08-21, dengan dan tanpa User-Agent browser). "
+    "Menembus captcha bukan cara yang benar untuk mengambil data; tekstur planet/bintang "
+    "yang setara diambil dari nasa_3d_resources ('Images and Textures') dan nasa_svs_texture_kits.",
+))
+
 
 def sources_by_tier(tier: int) -> list[SourceSpec]:
     return [s for s in SOURCES.values() if s.tier == tier]

@@ -30,7 +30,9 @@ MARKER_TO_SCHEMA = {
     "star.json": "star", "host_star.json": "exoplanet_host_star",
     "asteroid.json": "asteroid", "deep_sky_object.json": "deep_sky_object",
     "system.json": "multiple_system", "shower.json": "meteor_shower",
+    "model_3d.json": "model_3d",
 }
+
 
 
 def _check_checksums() -> tuple[int, list[str]]:
@@ -50,6 +52,40 @@ def _check_checksums() -> tuple[int, list[str]]:
     return ok, bad
 
 
+def _check_stream_manifests(sample_per_manifest: int = 40) -> tuple[int, int, list[str]]:
+    """Checksum-check files listed in data/raw/**/manifest.json.
+
+    Binary asset trees pulled by astro_datalake.models3d record their checksums
+    in one manifest instead of a .sha256 per file (a git checkout must stay
+    clean), so they need their own check. Sampled: these manifests cover
+    thousands of files and several GB.
+    """
+    checked = 0
+    manifests = 0
+    problems: list[str] = []
+    for manifest_path in sorted(settings.raw_dir.rglob("manifest.json")):
+        try:
+            manifest = json.loads(manifest_path.read_text())
+        except json.JSONDecodeError as exc:
+            problems.append(f"{manifest_path}: JSON tidak valid ({exc})")
+            continue
+        files = manifest.get("files") or []
+        if not files:
+            continue
+        manifests += 1
+        sample = files if len(files) <= sample_per_manifest else random.sample(files, sample_per_manifest)
+        for record in sample:
+            path = manifest_path.parent / record["path"]
+            if not path.exists():
+                problems.append(f"{path}: tercatat di manifest tapi file-nya tidak ada")
+                continue
+            if sha256_of_file(path) != record.get("sha256"):
+                problems.append(f"{path}: checksum tidak cocok dengan manifest")
+                continue
+            checked += 1
+    return manifests, checked, problems
+
+
 def _check_master_index_fresh() -> tuple[bool, dict]:
     idx_path = settings.catalog_dir / "master_index.json"
     if not idx_path.exists():
@@ -60,6 +96,7 @@ def _check_master_index_fresh() -> tuple[bool, dict]:
         "star": "star.json", "exoplanet_host_star": "host_star.json",
         "asteroid": "asteroid.json", "deep_sky_object": "deep_sky_object.json",
         "multiple_system": "system.json", "meteor_shower": "shower.json",
+        "model_3d": "model_3d.json",
     }
     mismatches = {}
     for obj_type, recorded_paths in index.get("objects", {}).items():
@@ -206,6 +243,9 @@ def run() -> None:
     ck_ok, ck_bad = _check_checksums()
     table.add_row("Checksum raw/", f"{ck_ok} OK, {len(ck_bad)} bermasalah")
 
+    manifests, manifest_ok, manifest_bad = _check_stream_manifests()
+    table.add_row("Manifest raw/ (sampel)", f"{manifests} manifest, {manifest_ok} file OK, {len(manifest_bad)} bermasalah")
+
     fresh, mismatches = _check_master_index_fresh()
     table.add_row("master_index.json vs live", "cocok" if fresh else f"{len(mismatches)} tipe tidak cocok: {mismatches}")
 
@@ -229,6 +269,10 @@ def run() -> None:
 
     console.print(table)
 
+    if manifest_bad:
+        console.print("\n[red]Manifest bermasalah (contoh):[/red]")
+        for msg in manifest_bad[:10]:
+            console.print(f"  - {msg}")
     if ck_bad:
         console.print("\n[red]Checksum bermasalah (contoh):[/red]")
         for msg in ck_bad[:10]:
@@ -251,7 +295,7 @@ def run() -> None:
             console.print(f"  - {msg}")
 
     problems = (
-        len(ck_bad) + (0 if fresh else 1) + len(empty) + failed
+        len(ck_bad) + len(manifest_bad) + (0 if fresh else 1) + len(empty) + failed
         + len(unattributed) + len(undeclared)
     )
     if problems:
