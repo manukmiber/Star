@@ -166,7 +166,15 @@ def test_build_writes_leaf_with_metadata(tmp_path):
     assert payload["has_mesh"] and payload["has_texture"]
     assert {f["variant"] for f in payload["files"]} == {"A"}
     assert payload["sources"][0]["key"] == "nasa_3d_resources"
-    assert (leaf / "README.md").exists()
+
+    # house convention: metadata.json + README carrying the shared attribution block
+    from astro_datalake.build.common import ATTRIBUTION_BEGIN
+
+    metadata = json.loads((leaf / "metadata.json").read_text())
+    assert metadata["source"] == "nasa_3d_resources"
+    assert metadata["license"]
+    assert metadata["classification_method"] == "fallback:spacecraft"
+    assert ATTRIBUTION_BEGIN in (leaf / "README.md").read_text()
     assert json.loads((out / "index.json").read_text())["counts"] == {"spacecraft": 1}
 
 

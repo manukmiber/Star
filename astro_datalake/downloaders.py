@@ -28,6 +28,7 @@ SBDB_QUERY = "https://ssd-api.jpl.nasa.gov/sbdb_query.api"
 HORIZONS_API = "https://ssd.jpl.nasa.gov/api/horizons.api"
 CNEOS_CAD = "https://ssd-api.jpl.nasa.gov/cad.api"
 CNEOS_SENTRY = "https://ssd-api.jpl.nasa.gov/sentry.api"
+SIMBAD_TAP = "https://simbad.cds.unistra.fr/simbad/sim-tap/sync"
 
 
 def static_file(url: str, filename: str, timeout: float = 90.0) -> Fetcher:
@@ -79,6 +80,58 @@ def multi_vizier_tables(tables: dict[str, str], timeout: float = 180.0) -> Fetch
     return fetch
 
 
+def tap_queries(
+    base_url: str, queries: dict[str, str], timeout: float = 240.0, maxrec: int = 500_000
+) -> Fetcher:
+    """queries: {filename: ADQL}, run sequentially against one TAP endpoint.
+
+    `maxrec` is sent explicitly because TAP servers silently truncate at their
+    own default (SIMBAD's is 50000 rows) — a truncated CSV looks perfectly
+    valid, which is exactly the kind of quiet data loss this project must not
+    ship. If a result comes back at exactly `maxrec` data rows we assume it
+    was clipped and raise instead of caching a half catalog.
+    """
+
+    async def fetch(client: httpx.AsyncClient) -> list[tuple[str, bytes]]:
+        results = []
+        for filename, adql in queries.items():
+            response = await get(
+                client,
+                base_url,
+                params={
+                    "request": "doQuery",
+                    "lang": "adql",
+                    "format": "csv",
+                    "MAXREC": str(maxrec),
+                    "query": adql,
+                },
+                timeout=timeout,
+            )
+            n_rows = max(response.content.count(b"\n") - 1, 0)
+            if n_rows >= maxrec:
+                raise RuntimeError(
+                    f"{filename}: {n_rows} rows == MAXREC ({maxrec}); result was truncated, "
+                    "raise MAXREC or split the query instead of caching partial data"
+                )
+            results.append((filename, response.content))
+        return results
+
+    return fetch
+
+
+def static_files(urls: dict[str, str], timeout: float = 120.0) -> Fetcher:
+    """urls: {filename: url}, fetched sequentially (still rate-limited)."""
+
+    async def fetch(client: httpx.AsyncClient) -> list[tuple[str, bytes]]:
+        results = []
+        for filename, url in urls.items():
+            response = await get(client, url, timeout=timeout)
+            results.append((filename, response.content))
+        return results
+
+    return fetch
+
+
 def sbdb_classes(classes: list[str], fields: str, timeout: float = 120.0) -> Fetcher:
     async def fetch(client: httpx.AsyncClient) -> list[tuple[str, bytes]]:
         results = []
@@ -87,6 +140,38 @@ def sbdb_classes(classes: list[str], fields: str, timeout: float = 120.0) -> Fet
                 client, SBDB_QUERY, params={"fields": fields, "sb-class": sb_class}, timeout=timeout
             )
             results.append((f"{sb_class}.json", response.content))
+        return results
+
+    return fetch
+
+
+def horizons_elements(bodies: dict[str, str], epoch_jd: str, timeout: float = 60.0) -> Fetcher:
+    """Heliocentric osculating elements at one epoch. bodies: {stem: COMMAND}.
+
+    `epoch_jd` is the epoch SBDB uses for the bulk of its small-body orbits,
+    so the giant-planet longitudes line up with the asteroid elements they
+    get compared against (see build/small_bodies.py, trojan L4/L5 split).
+    """
+
+    async def fetch(client: httpx.AsyncClient) -> list[tuple[str, bytes]]:
+        results = []
+        for name, command in bodies.items():
+            response = await get(
+                client,
+                HORIZONS_API,
+                params={
+                    "format": "text",
+                    "COMMAND": f"'{command}'",
+                    "OBJ_DATA": "'NO'",
+                    "MAKE_EPHEM": "'YES'",
+                    "EPHEM_TYPE": "'ELEMENTS'",
+                    "CENTER": "'500@10'",
+                    "TLIST": epoch_jd,
+                    "OUT_UNITS": "'AU-D'",
+                },
+                timeout=timeout,
+            )
+            results.append((f"{name}.txt", response.content))
         return results
 
     return fetch
@@ -191,7 +276,49 @@ DOWNLOAD_PLAN["hyg_database"] = static_file(
     "https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/hygdata_v41.csv",
     "hygdata_v41.csv",
 )
-DOWNLOAD_PLAN["simbad_tap"] = None  # deferred to Fase 3 crosswalk, see registry notes
+# SIMBAD: bounded ADQL queries only — never a dump of `basic` (>15M rows). Five slices
+# feed stars/special/ (the object types HYG has no column for), four `ident` self-joins
+# feed _catalog/crosswalk.parquet with the HIP -> {main_id, Gaia DR3, TIC, 2MASS, HD}
+# identifiers the Fase 3 crosswalk was missing.
+_SIMBAD_BASIC_COLS = (
+    "b.main_id, b.ra, b.dec, b.otype, b.otype_txt, b.sp_type, b.plx_value, b.plx_err, "
+    "b.pmra, b.pmdec, b.rvz_radvel, b.morph_type, b.nbref"
+)
+_SIMBAD_QUERIES = {
+    f"otype_{_slug}.csv": (
+        f"select {_SIMBAD_BASIC_COLS} from basic b "
+        f"join otypes o on b.oid = o.oidref where o.otype = '{_otype}'"
+    )
+    for _slug, _otype in [
+        ("brown_dwarfs", "BD*"),
+        ("neutron_stars", "N*"),
+        ("black_holes", "BH"),
+        ("supergiants", "sg*"),
+    ]
+}
+# No SIMBAD otype exists for hypergiants; the MK luminosity class does the work instead
+# ("Ia+" / "Ia-0" is the standard notation for a hypergiant).
+_SIMBAD_QUERIES["otype_hypergiants.csv"] = (
+    f"select {_SIMBAD_BASIC_COLS} from basic b "
+    "where b.sp_type like '%Ia+%' or b.sp_type like '%Ia-0%' or b.sp_type like '%0-Ia%'"
+)
+for _slug, _prefix in [
+    ("gaia_dr3", "Gaia DR3 "),
+    ("tic", "TIC "),
+    ("twomass", "2MASS "),
+    ("hd", "HD "),
+]:
+    _SIMBAD_QUERIES[f"xwalk_hip_{_slug}.csv"] = (
+        f"select i1.id as hip_id, i2.id as other_id from ident i1 "
+        f"join ident i2 on i1.oidref = i2.oidref "
+        f"where i1.id like 'HIP %' and i2.id like '{_prefix}%'"
+    )
+_SIMBAD_QUERIES["xwalk_hip_main_id.csv"] = (
+    "select i.id as hip_id, b.main_id, b.otype, b.sp_type "
+    "from ident i join basic b on i.oidref = b.oid where i.id like 'HIP %'"
+)
+
+DOWNLOAD_PLAN["simbad_tap"] = tap_queries(SIMBAD_TAP, _SIMBAD_QUERIES)
 DOWNLOAD_PLAN["vizier_tap"] = None  # generic access point, not a dataset of its own
 DOWNLOAD_PLAN["iau_star_names"] = static_file(
     "https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt", "IAU-CSN.txt"
@@ -231,4 +358,25 @@ DOWNLOAD_PLAN["openngc"] = static_file(
 DOWNLOAD_PLAN["messier_catalog"] = static_file(
     "https://raw.githubusercontent.com/mattiaverga/OpenNGC/master/database_files/NGC.csv",
     "NGC.csv",
+)
+
+# --- Fase 5: sumber tambahan untuk gap di REPORT.md §5 ---------------------
+DOWNLOAD_PLAN["atnf_pulsar_catalog"] = vizier_table("B/psr/psr", "psr.csv")
+DOWNLOAD_PLAN["blackcat_bh_transients"] = vizier_table("J/A+A/587/A61/tablea1", "blackcat.csv")
+DOWNLOAD_PLAN["iau_meteor_data_center"] = static_files({
+    "streamestablisheddata.txt": "https://www.ta3.sk/IAUC22DB/MDC2022/Etc/streamestablisheddata2026.txt",
+    "streamfulldata.txt": "https://www.ta3.sk/IAUC22DB/MDC2022/Etc/streamfulldata2026.txt",
+})
+DOWNLOAD_PLAN["sbdb_query_hyperbolic"] = sbdb_classes(
+    ["HYP", "PAR", "HYA"],
+    fields="full_name,spkid,pdes,name,a,q,e,i,om,w,tp,epoch,H,diameter,albedo,class,neo,pha",
+)
+# Epoch of the bulk of SBDB's orbit solutions in the Fase 2/5 pulls; the
+# giant-planet elements are fetched at exactly this epoch so the trojan
+# longitude comparison needs no propagation for most objects.
+SBDB_REFERENCE_EPOCH_JD = "2461200.5"
+
+DOWNLOAD_PLAN["jpl_horizons_elements"] = horizons_elements(
+    {"jupiter_barycenter": "5", "neptune_barycenter": "8"},
+    epoch_jd=SBDB_REFERENCE_EPOCH_JD,
 )

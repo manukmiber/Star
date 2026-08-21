@@ -35,7 +35,14 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .common import BuildReport, write_json, write_text
+from .common import (
+    BuildReport,
+    attribution_block,
+    write_category_index,
+    write_json,
+    write_metadata,
+    write_text,
+)
 from ..core.cache import sha256_of_file
 from ..core.naming import slugify
 
@@ -574,7 +581,15 @@ def write_object(obj: ModelObject, out_root: Path) -> dict:
     }
     write_json(folder / "model_3d.json", payload)
 
-    attribution = "\n".join(f"- {SOURCE_META[key]['attribution']}" for key in sorted(obj.sources))
+    source_field = " + ".join(sorted(obj.sources))
+    write_metadata(
+        folder / "metadata.json",
+        source=source_field,
+        source_url=", ".join(s["url"] for s in sources),
+        record_count=len(entries),
+        classification_method=obj.classified_by,
+    )
+
     lines = [
         f"# {obj.display_name}",
         "",
@@ -582,14 +597,13 @@ def write_object(obj: ModelObject, out_root: Path) -> dict:
         f"{len(entries)} file — "
         f"{sum(1 for e in entries if e['role'] == 'mesh')} mesh, "
         f"{sum(1 for e in entries if e['role'] == 'texture')} tekstur.",
-        "",
-        "## Atribusi",
-        "",
-        attribution or "-",
     ]
     for desc in obj.descriptions:
         if desc.get("excerpt"):
             lines += ["", "## Deskripsi (dari sumber)", "", desc["excerpt"], "", f"<{desc.get('url')}>"]
+    lines += ["", "## Cara pakai atribusinya", ""]
+    lines += [f"- {SOURCE_META[key]['attribution']}" for key in sorted(obj.sources)]
+    lines += ["", attribution_block([source_field])]
     write_text(folder / "README.md", "\n".join(lines))
     return payload
 
@@ -647,8 +661,19 @@ def build(raw_root: Path, out_root: Path) -> BuildReport:
             "objects": sorted(items, key=lambda i: i["name"]),
             "generated_at": datetime.now(timezone.utc).isoformat(),
         })
-        write_text(out_root / category / "README.md",
-                   f"# {category}\n\n{len(items)} objek dengan model 3D dan/atau tekstur.\n")
+        category_sources = sorted({key for item in items for key in item["sources"]})
+        write_metadata(
+            out_root / category / "metadata.json",
+            source=" + ".join(category_sources),
+            source_url=", ".join(SOURCE_META[key]["url"] for key in category_sources),
+            record_count=len(items),
+        )
+        write_category_index(
+            out_root / category,
+            [item["path"].split("/", 1)[-1] for item in items],
+            f"{len(items)} objek dengan model 3D dan/atau tekstur.",
+            sources=[" + ".join(category_sources)],
+        )
 
     write_json(out_root / "index.json", {
         "generated_at": datetime.now(timezone.utc).isoformat(),

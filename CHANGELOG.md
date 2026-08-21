@@ -87,22 +87,140 @@ Probe, ISS, Curiosity/Perseverance, dst.) plus 40 objek perangkat darat; komet
 plus 3 peta bintang seluruh langit (Hipparcos, Tycho, Yale Bright Star); objek
 deep-sky 17; fitur permukaan 36.
 
-**Dua bug lama ikut ketemu dan diperbaiki:**
+Tiap folder objek juga menulis `metadata.json` + blok atribusi standar
+(`attribution_block()` dari Fase 6) di README-nya, jadi cek "Atribusi di README
+tiap folder" milik `astro verify` ikut mencakup `models_3d/` — naik dari 10
+folder terperiksa jadi 403. Ini penting khusus untuk DAMIT yang CC BY:
+atribusinya wajib ikut di produk turunan.
 
-- `build_master_index()` menghitung `data/_catalog/schema/*.json` sebagai objek,
-  karena nama file skema memang sengaja sama dengan marker leaf
-  (`planet.json`, `model_3d.json`, …). Selama ini lolos `astro verify` cuma
-  karena kedua sisi hitungan sama-sama salah; begitu ada tipe baru yang
-  skemanya belum ada saat index ditulis, mismatch-nya muncul.
-  Efek keduanya: skema `model_3d` yang punya `required` membuat cek schema
-  gagal karena file skemanya sendiri ikut divalidasi sebagai instance — skema
-  lama lolos cuma karena tidak satu pun punya `required`. `_catalog/` sekarang
-  dikecualikan di `build_master_index()` dan di ketiga tempat `astro verify`
-  menyapu leaf.
+**Satu lubang cek ditutup:**
+
 - `astro verify` tidak punya cek apa pun untuk sumber yang checksum-nya
   disimpan di `manifest.json` (bukan sidecar `.sha256` per file, yang akan
   mengotori working tree hasil `git clone`). Sekarang ada cek manifest
   tersampel.
+
+Catatan: cabang ini dibuat dari Fase 7 dan sempat memperbaiki sendiri bug
+`build_master_index()` yang menghitung `data/_catalog/schema/*.json` sebagai
+objek (ketahuan karena skema `model_3d` punya `required`, sehingga file
+skemanya sendiri gagal divalidasi sebagai instance). Ternyata Fase 5 sudah
+memperbaikinya lebih dulu lewat `object_folders()`; versi duplikat di cabang
+ini dibuang saat merge `main`.
+
+## 2026-08-20 — Fase 5: Menutup gap yang tercatat di REPORT.md §5
+
+Fokusnya satu: bagian yang Fase 3-4 tinggalkan sebagai "belum dibangun".
+Delapan dari sembilan item di REPORT.md §5 sekarang terisi; satu (famili
+asteroid) tetap terbuka dengan alasan yang sama seperti sebelumnya.
+
+**Sumber baru (6, semua diprobe hidup 2026-08-20)**
+
+- `simbad_tap` — dulu terdaftar tapi `DOWNLOAD_PLAN`-nya `None`. Sekarang
+  menarik sembilan query ADQL terbatas: lima irisan tipe objek (`otypes`
+  BD*/N*/BH/sg*, plus kelas luminositas Ia+ untuk hipergiant) dan empat
+  join tabel `ident` (HIP -> main_id/Gaia DR3/TIC/2MASS/HD). Tetap bukan
+  dump: `basic` sendiri >15 juta baris.
+- `atnf_pulsar_catalog` (VizieR B/psr/psr) — pulsar + magnetar.
+- `blackcat_bh_transients` (VizieR J/A+A/587/A61/tablea1) — nama tabel
+  `blackcat` yang ditebak pertama kali tidak ada; `tablea1` yang benar.
+- `iau_meteor_data_center` — daftar hujan meteor resmi IAU.
+- `sbdb_query_hyperbolic` — kelas orbit HYP/PAR/**HYA**.
+- `jpl_horizons_elements` — elemen osculating Jupiter & Neptunus pada
+  JD 2461200.5 (epoch yang dipakai mayoritas solusi orbit SBDB).
+
+**Yang dibangun**
+
+- `exoplanets/by_type/` — 12 kategori turunan (terrestrial, super_earth,
+  sub_neptune, neptune_like, gas_giant, hot/warm/cold jupiter & neptune,
+  ultra_short_period). Sengaja tumpang tindih: hot Jupiter masuk
+  `gas_giant` dan `hot_jupiter` sekaligus.
+- `exoplanets/habitable_zone/` — batas fluks Kopparapu et al. (2013,
+  erratum 2014) dihitung ulang per bintang: 184 planet di zona
+  konservatif, 18 di antaranya berpotensi berbatu. Plus `_unassessable/`
+  untuk 376 planet yang Teff-nya hilang atau di luar rentang validitas
+  2600-7200 K — termasuk seluruh sistem TRAPPIST-1 (Teff 2566 K).
+  Ekstrapolasi ditolak, tapi objeknya didaftar lengkap dengan alasannya.
+- `stars/special/` — tujuh subkategori yang dulu kosong sekarang terisi:
+  pulsars (2536), magnetars (24, dari flag `Type`=AXP milik ATNF sendiri),
+  neutron_stars (86), black_holes (5 + tabel BlackCAT), brown_dwarfs
+  (3903), supergiants (538), hypergiants (104). Potongan kelas luminositas
+  dari HYG ditulis sebagai file terpisah, tidak dilebur ke sensus katalog.
+- `multiple_systems/binary/<nama>/` — 293 sistem bernama hasil cross-match
+  posisi WDS x HYG. Dump katalog mentah pindah ke `multiple_systems/_catalogs/`
+  supaya `binary/` isinya sistem saja.
+- `solar_system/small_bodies/trojans/{l4,l5}` — 10403 vs 5975 (rasio 1,74,
+  sesuai asimetri L4/L5 yang memang diamati). Ini geometri murni:
+  L = Omega + omega + M dibanding bujur rata-rata Jupiter.
+- `solar_system/small_bodies/trans_neptunian/{classical,resonant,scattered,
+  detached,inner_belt}` — 2311/1928/2307/308/431. **Perkiraan**, dan
+  ditandai begitu di tiap metadata.json.
+- `solar_system/small_bodies/comets/interstellar/` — 1I/'Oumuamua,
+  2I/Borisov, 3I/ATLAS.
+- `solar_system/small_bodies/meteor_showers/` — 113 hujan established IAU.
+- `_catalog/crosswalk.parquet` — dari 6 kolom jadi 20: SIMBAD main_id/otype/
+  sp_type (117951 baris terisi), Gaia DR3 (113993), TIC (115340), 2MASS
+  (116420), nama host exoplanet (795).
+- Atribusi otomatis: `astro build` sekarang menstempel blok atribusi ke
+  README tiap folder dari `source` di metadata.json-nya, plus
+  `data/ATTRIBUTION.md` gabungan. `astro verify` menolak build yang folder
+  datanya kehilangan blok itu.
+
+**Yang ditemukan waktu mengerjakan**
+
+- SBDB **tidak pernah** memakai designation IAU `1I/2I/3I` di field mana
+  pun: 'Oumuamua tersimpan sebagai `'Oumuamua (A/2017 U1)` di kelas HYA
+  (kelas yang tidak ikut ditarik di Fase 2), Borisov sebagai
+  `C/2019 Q4 (Borisov)`, ATLAS sebagai `C/2025 N1 (ATLAS)`. Jadi
+  "cari yang namanya berawalan angka+I" — pendekatan pertama — menghasilkan
+  nol objek. Sekarang jembatannya tabel tiga baris yang eksplisit.
+- Orbit hiperbolik saja bukan bukti antarbintang: 515 dari 520 komet HYP
+  ada di bawah e=1,01, dan bahkan di antara yang e>=1,05 ada C/1980 E1 dan
+  C/1954 O1 yang komet tata surya kena tendang Jupiter. Mereka disimpan di
+  file terpisah, bukan dilabeli antarbintang.
+- SIMBAD TAP sync diam-diam memotong hasil di 50000 baris. Query crosswalk
+  yang pertama "berhasil" dengan tepat 50000 baris di lima file berbeda —
+  angka bulat yang mencurigakan itu satu-satunya petunjuk. Sekarang
+  `tap_queries()` mengirim MAXREC eksplisit dan **error** kalau hasilnya
+  pas sama dengan MAXREC.
+- Salinan ATNF Pulsar Catalogue di VizieR beku di 2536 pulsar sementara
+  katalog aslinya sudah lewat 3500. Dikonfirmasi lewat `select count(*)`
+  bahwa itu memang seluruh isi tabel, bukan query terpotong — dicatat di
+  registry dan di README foldernya.
+- `_load_class_file()` punya bug laten: `pl.DataFrame(...)` tanpa
+  `infer_schema_length=None` menebak tipe kolom dari baris awal saja, dan
+  meledak begitu ketemu nilai teks ("Great comet") di kolom yang tadinya
+  terlihat numerik. Kelas HYP yang memicunya.
+- `master_index.json` ternyata ikut menghitung file di `_catalog/schema/`
+  sebagai objek: nama file skema memang sengaja sama dengan file daun yang
+  divalidasinya (`moon.json`, `planet.json`, ...), jadi tiap tipe objek
+  kelebihan satu sejak Fase 3. `astro verify` tidak menangkapnya karena
+  cek "index vs live" memakai rglob yang sama persis, jadi dua-duanya salah
+  dengan cara yang sama dan tetap "cocok". Angka di REPORT sekarang
+  masing-masing turun satu — itu koreksi, bukan data hilang.
+- Atribusi per-folder awalnya cuma kena 6510 folder dari ~33 ribu, karena
+  builder small-bodies menulis `source: "jpl_sbdb_query"` — string yang
+  bukan key registry mana pun — untuk 26 ribu folder asteroid bernama.
+  Sekarang tiap kelas orbit membawa key sumbernya sendiri
+  (`sbdb_query_neo`/`sbdb_query_full`), dan `source_keys_of()` mengerti
+  string multi-sumber seperti `"jpl_sat_elem + jpl_sat_phys_par"`.
+  Setelah diperbaiki: 33062 folder terstempel.
+- Jendela cross-match nama: 5 arcsec dapat 274 bintang, 30 arcsec dapat
+  293, 120 arcsec tetap 294. Dipakai 30 — posisi WDS Alpha Centauri
+  16 arcsec dari HYG (gerak diri tinggi), dan di atas 30 tidak ada
+  tambahan selain risiko salah pasang.
+- Ambang toleransi resonansi TNO tidak bisa datar: 0,5 AU seragam menaruh
+  Albion (cubewano purba) di resonansi 7:4. Sekarang lebarnya per
+  resonansi, menyempit untuk resonansi orde tinggi.
+
+**Masih belum dibangun**
+
+- `asteroid_belt/_by_family/` — tetap butuh proper elements dari katalog
+  famili (AstDyS `all.famrec` 104MB atau Nesvorny/PDS). File AstDyS-nya
+  memang bisa diakses, tapi format kolomnya tidak terdokumentasi di
+  servernya; menebak kolom mana yang ID famili sama saja dengan mengarang
+  keanggotaan famili, jadi tidak dikerjakan.
+- `usgs_gazetteer`, `ucs_satellite_db`, `spacetrack`, `open_exoplanet_catalogue`,
+  Gaia DR3 penuh — alasannya tidak berubah dari REPORT.md §4.
 
 ## 2026-08-20 — Fase 3-4: Build struktur folder + Verifikasi
 
