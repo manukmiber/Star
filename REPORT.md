@@ -66,6 +66,15 @@ diotomatisasi di README per-folder, baru dicatat di `metadata.json`/`sources.jso
 
 ## 4. Sumber yang tidak/belum ditarik, dan kenapa
 
+> **Catatan 2026-08-21 (Fase 8):** tabel di bawah ini adalah keadaan waktu
+> laporan ini ditulis (Fase 0–4). Sejak itu tujuh dari sumber-sumber ini sudah
+> bisa ditarik — `usgs_gazetteer`, `open_exoplanet_catalogue`,
+> `ucs_satellite_db`, `simbad_tap`, `gaia_dr3_nss`, `gaia_dr3_tap`, dan
+> `vizier_tap` — dan `nssdc_planetary_factsheet` diganti sumber baru
+> `le_systeme_solaire`. Sekarang 45 dari 47 sumber bisa ditarik; yang tersisa
+> hanya `nssdc_planetary_factsheet` (endpoint-nya memang sudah mati) dan
+> `spacetrack` (butuh akun). Alasan per sumber ada di CHANGELOG.md.
+
 | Sumber | Alasan |
 |---|---|
 | `spacetrack` | Butuh akun gratis; kredensial tidak tersedia di environment ini |

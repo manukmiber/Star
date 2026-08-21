@@ -1,0 +1,26 @@
+# Cloudflare deploy config.
+#
+# The build was failing with:
+#   ✘ [ERROR] Could not detect a directory containing static files
+#             (e.g. html, css and js) for the project
+# because the repo is a Python project with no wrangler config at all, so
+# `npx wrangler deploy` had no entrypoint and no assets directory to infer.
+# This file supplies both: a Worker (worker/index.js) plus a static assets
+# directory (public/), which is the Workers Static Assets layout.
+#
+# Deploying with Pages instead? Use `npx wrangler pages deploy public`
+# — do not set pages_build_output_dir here, it conflicts with `main`.
+
+name = "astro-datalake"
+main = "worker/index.js"
+compatibility_date = "2026-08-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+# Assets are matched first; anything unmatched (i.e. /api/*) falls through to
+# the Worker, so the site is served with zero Worker invocations.
+run_worker_first = ["/api/*"]
+
+[observability]
+enabled = true

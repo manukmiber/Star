@@ -5,6 +5,7 @@
   astro build                # normalisasi raw -> processed + bikin struktur folder
   astro verify                # cek checksum, cek row count, cek folder kosong
   astro status                # ringkasan: sumber apa saja yang sudah ada, ukuran, tanggal
+  astro manifest              # tulis ulang public/manifest.json (indeks download)
 """
 
 from __future__ import annotations
@@ -53,6 +54,35 @@ def verify() -> None:
     from .commands import verify as verify_cmd
 
     verify_cmd.run()
+
+
+@app.command()
+def manifest(
+    output: str = typer.Option(None, "--output", "-o", help="Tujuan file manifest."),
+    check: bool = typer.Option(
+        False, "--check", help="Jangan tulis; keluar 1 kalau manifest sudah basi."
+    ),
+) -> None:
+    """Regenerate public/manifest.json (the download index) from the link registry."""
+    from pathlib import Path
+
+    from ..manifest import default_manifest_path, manifest_is_current, write_manifest
+
+    path = default_manifest_path() if output is None else Path(output)
+    if check:
+        if manifest_is_current(path):
+            typer.secho(f"{path} is up to date.", fg=typer.colors.GREEN)
+            return
+        typer.secho(
+            f"{path} is stale — regenerate with `astro manifest`.",
+            fg=typer.colors.RED,
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    written = write_manifest(path)
+    typer.secho(
+        f"Wrote {written} ({written.stat().st_size:,} bytes)", fg=typer.colors.GREEN
+    )
 
 
 @app.command()

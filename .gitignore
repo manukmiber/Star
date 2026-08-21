@@ -26,6 +26,10 @@ data/_catalog/*.parquet
 !data/_catalog/schema/
 !data/_catalog/schema/.gitkeep
 
+# Cloudflare / wrangler local state
+.wrangler/
+node_modules/
+
 # Logs
 logs/*.log
 !logs/.gitkeep

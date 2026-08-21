@@ -26,9 +26,88 @@ uv sync
 astro pull <source>        # pull one source (see `astro status` for keys)
 astro pull --all --tier 1  # pull every source in a tier
 astro build                # normalize raw -> processed folder structure
-astro verify                # checksum / row-count / empty-folder / schema checks
-astro status                 # summary: what's been pulled, sizes, dates
+astro verify               # checksum / row-count / empty-folder / schema checks
+astro status               # summary: what's been pulled, sizes, dates
+astro manifest             # regenerate public/manifest.json (the download index)
 ```
+
+## Download links
+
+Every source's exact download URL lives in `astro_datalake/sources/links.py`
+as data, not as code. One `DownloadTarget` per file to fetch, carrying its
+URL, HTTP method, query parameters, form body, headers, timeout and expected
+size. A source is in exactly one state:
+
+| Status | Meaning |
+|---|---|
+| `direct` | Plain GET URL; click it or `curl` it as-is. |
+| `query` | GET/POST with parameters (TAP/ADQL, SBDB, a form POST). Still fully resolvable. |
+| `credentialed` | Real documented endpoint, needs an account (`spacetrack`). |
+| `retired` | Endpoint is gone; `replaced_by` names what covers it now. |
+
+That one definition feeds three consumers, so a link can never disagree with
+itself:
+
+- `astro_datalake/downloaders.py` turns each target into an async fetcher,
+- `astro manifest` renders `public/manifest.json`,
+- the static site and the Worker read that manifest.
+
+45 of the 47 sources are fetchable with no setup. The two that are not:
+`nssdc_planetary_factsheet` (retired — NASA now 307-redirects the whole
+fact-sheet path to a generic landing page; `le_systeme_solaire` and
+`jpl_horizons` cover the same parameters) and `spacetrack` (free account
+required; set `ASTRO_DL_SPACETRACK_USER` / `ASTRO_DL_SPACETRACK_PASS`).
+
+### API keys
+
+`le_systeme_solaire` needs `Authorization: Bearer <key>`. A working key is
+checked into `core/config.py` as the default so the source works out of the
+box; override it with `ASTRO_DL_SOLARSYSTEM_API_KEY`. The key is deliberately
+kept out of every published artifact — the manifest publishes header *names*
+only, and the site's curl snippets show `$ASTRO_DL_SOLARSYSTEM_API_KEY` in
+place of the value. A test enforces this.
+
+## Web frontend (Cloudflare)
+
+`public/` is a static download index rendered from `manifest.json`, and
+`worker/index.js` is a small JSON API over the same manifest.
+
+The Worker deliberately never streams a dataset through itself — catalogue
+files here run from 70 KB to ~200 MB. It only reads the manifest, answers
+filter/lookup queries over ~110 entries, and `302`s download requests
+straight to the upstream host, so the bytes go source → client and a large
+download costs the Worker one header write.
+
+```
+GET /api/health                       manifest freshness + counts
+GET /api/sources?tier=&category=&q=   filtered source list
+GET /api/sources/<key>                one source with all its targets
+GET /api/download/<key>[/<file>]      302 to upstream (or the recipe, if the
+                                      target needs a POST body or auth header)
+```
+
+### Deploying
+
+The build was failing with:
+
+```
+✘ [ERROR] Could not detect a directory containing static files
+          (e.g. html, css and js) for the project
+```
+
+because the repo is a Python project that had no wrangler config at all, so
+`npx wrangler deploy` had neither an entrypoint nor an assets directory to
+infer. `wrangler.toml` now supplies both (`main` + `[assets]`), which is the
+Workers Static Assets layout, and `npx wrangler deploy` works unchanged.
+
+`public/manifest.json` is committed because the Cloudflare build only runs
+`uv sync` and `npx wrangler deploy` — there is no generation step in CI. Run
+`astro manifest` after touching `links.py`; `astro manifest --check` (and a
+test) fails if the committed copy has drifted.
+
+If your Cloudflare project is Pages rather than Workers, deploy with
+`npx wrangler pages deploy public` instead — don't add `pages_build_output_dir`
+to `wrangler.toml`, it conflicts with `main`.
 
 ## Project layout
 
@@ -36,8 +115,14 @@ astro status                 # summary: what's been pulled, sizes, dates
 astro_datalake/
 ├── cli/            # typer CLI (main.py + commands/{pull,build,verify,status}.py)
 ├── core/           # config, logging, rate-limited HTTP client, checksum cache, naming
-├── sources/        # registry.py: every source, its tier, and its probe endpoint
+├── sources/        # registry.py: source -> tier/probe; links.py: source -> download URLs
+├── downloaders.py  # fetchers generated from links.py
+├── manifest.py     # renders public/manifest.json from links.py
 └── schemas/        # pydantic v2 models for normalized objects (added in Fase 3)
+
+public/             # static download index (index.html + app.js + manifest.json)
+worker/             # Cloudflare Worker: catalogue JSON API + download redirects
+wrangler.toml       # Workers + static assets deploy config
 
 data/
 ├── _catalog/       # master_index.json, crosswalk.parquet, sources.json, schema/
@@ -69,5 +154,7 @@ mapping and `CHANGELOG.md` for endpoint verification results.
 
 ## Status
 
-Project is being built phase by phase (see CHANGELOG.md). Current phase:
-**Fase 0 — scaffold** (this commit). No data has been pulled yet.
+Project is being built phase by phase (see CHANGELOG.md). Fase 0–4 (scaffold,
+probe, pull, build, verify) are done — see `REPORT.md`. The current change
+completes the download-link registry for all 47 sources and adds the
+Cloudflare frontend.

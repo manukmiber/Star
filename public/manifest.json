@@ -1,0 +1,1760 @@
+{
+  "manifest_version": 1,
+  "generated_at": "2026-08-21T20:21:34Z",
+  "project": "astro-datalake",
+  "counts": {
+    "sources": 47,
+    "targets": 113,
+    "fetchable_sources": 45,
+    "by_tier": {
+      "tier1": 39,
+      "tier2": 5,
+      "tier3": 3
+    }
+  },
+  "sources": [
+    {
+      "key": "celestrak_gp_active",
+      "name": "CelesTrak GP data \u2014 group=active",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/NORAD/elements/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json'"
+        }
+      ]
+    },
+    {
+      "key": "celestrak_gp_cubesat",
+      "name": "CelesTrak GP data \u2014 group=cubesat",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/NORAD/elements/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=cubesat&FORMAT=json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://celestrak.org/NORAD/elements/gp.php?GROUP=cubesat&FORMAT=json'"
+        }
+      ]
+    },
+    {
+      "key": "celestrak_gp_galileo",
+      "name": "CelesTrak GP data \u2014 group=galileo",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/NORAD/elements/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=galileo&FORMAT=json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://celestrak.org/NORAD/elements/gp.php?GROUP=galileo&FORMAT=json'"
+        }
+      ]
+    },
+    {
+      "key": "celestrak_gp_geo",
+      "name": "CelesTrak GP data \u2014 group=geo",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/NORAD/elements/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=geo&FORMAT=json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://celestrak.org/NORAD/elements/gp.php?GROUP=geo&FORMAT=json'"
+        }
+      ]
+    },
+    {
+      "key": "celestrak_gp_gps_ops",
+      "name": "CelesTrak GP data \u2014 group=gps-ops",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/NORAD/elements/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=json'"
+        }
+      ]
+    },
+    {
+      "key": "celestrak_gp_last_30_days",
+      "name": "CelesTrak GP data \u2014 group=last-30-days",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/NORAD/elements/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=last-30-days&FORMAT=json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://celestrak.org/NORAD/elements/gp.php?GROUP=last-30-days&FORMAT=json'"
+        }
+      ]
+    },
+    {
+      "key": "celestrak_gp_military",
+      "name": "CelesTrak GP data \u2014 group=military",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/NORAD/elements/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=military&FORMAT=json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://celestrak.org/NORAD/elements/gp.php?GROUP=military&FORMAT=json'"
+        }
+      ]
+    },
+    {
+      "key": "celestrak_gp_science",
+      "name": "CelesTrak GP data \u2014 group=science",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/NORAD/elements/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=science&FORMAT=json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://celestrak.org/NORAD/elements/gp.php?GROUP=science&FORMAT=json'"
+        }
+      ]
+    },
+    {
+      "key": "celestrak_gp_starlink",
+      "name": "CelesTrak GP data \u2014 group=starlink",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/NORAD/elements/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=json'"
+        }
+      ]
+    },
+    {
+      "key": "celestrak_gp_stations",
+      "name": "CelesTrak GP data \u2014 group=stations",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/NORAD/elements/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json'"
+        }
+      ]
+    },
+    {
+      "key": "celestrak_gp_weather",
+      "name": "CelesTrak GP data \u2014 group=weather",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/NORAD/elements/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=weather&FORMAT=json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://celestrak.org/NORAD/elements/gp.php?GROUP=weather&FORMAT=json'"
+        }
+      ]
+    },
+    {
+      "key": "celestrak_satcat",
+      "name": "CelesTrak SATCAT (full catalog incl. decayed objects)",
+      "tier": 2,
+      "category": "solar_system/artificial_satellites",
+      "license": "CelesTrak \u2014 attribution requested",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://celestrak.org/satcat/search.php",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "satcat.csv",
+          "url": "https://celestrak.org/pub/satcat.csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'satcat.csv' 'https://celestrak.org/pub/satcat.csv'",
+          "approx_bytes": 9000000
+        }
+      ],
+      "approx_bytes": 9000000
+    },
+    {
+      "key": "cneos_cad",
+      "name": "CNEOS Close Approach Data API",
+      "tier": 1,
+      "category": "solar_system/small_bodies",
+      "license": "Public domain (NASA/JPL)",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://ssd-api.jpl.nasa.gov/doc/cad.html",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "cad.json",
+          "url": "https://ssd-api.jpl.nasa.gov/cad.api?date-min=1900-01-01&date-max=2200-01-01&dist-max=0.2&fullname=true",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'cad.json' 'https://ssd-api.jpl.nasa.gov/cad.api?date-min=1900-01-01&date-max=2200-01-01&dist-max=0.2&fullname=true'"
+        }
+      ]
+    },
+    {
+      "key": "cneos_sentry",
+      "name": "CNEOS Sentry (impact risk list)",
+      "tier": 1,
+      "category": "solar_system/small_bodies",
+      "license": "Public domain (NASA/JPL)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://ssd-api.jpl.nasa.gov/doc/sentry.html",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "sentry.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sentry.api",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'sentry.json' 'https://ssd-api.jpl.nasa.gov/sentry.api'"
+        }
+      ]
+    },
+    {
+      "key": "exoplanet_archive_cumulative",
+      "name": "NASA Exoplanet Archive TAP \u2014 cumulative",
+      "tier": 1,
+      "category": "exoplanets",
+      "license": "Public domain (NASA); attribution requested by IPAC",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://exoplanetarchive.ipac.caltech.edu/docs/TAP/usingTAP.html",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "cumulative.csv",
+          "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+cumulative&format=csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'cumulative.csv' 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+cumulative&format=csv'"
+        }
+      ],
+      "notes": "Kepler KOI cumulative table."
+    },
+    {
+      "key": "exoplanet_archive_k2pandc",
+      "name": "NASA Exoplanet Archive TAP \u2014 k2pandc",
+      "tier": 1,
+      "category": "exoplanets",
+      "license": "Public domain (NASA); attribution requested by IPAC",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://exoplanetarchive.ipac.caltech.edu/docs/TAP/usingTAP.html",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "k2pandc.csv",
+          "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+k2pandc&format=csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'k2pandc.csv' 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+k2pandc&format=csv'"
+        }
+      ],
+      "notes": "K2 planets and candidates."
+    },
+    {
+      "key": "exoplanet_archive_ps",
+      "name": "NASA Exoplanet Archive TAP \u2014 ps",
+      "tier": 1,
+      "category": "exoplanets",
+      "license": "Public domain (NASA); attribution requested by IPAC",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://exoplanetarchive.ipac.caltech.edu/docs/TAP/usingTAP.html",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "ps.csv",
+          "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+ps&format=csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'ps.csv' 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+ps&format=csv'"
+        }
+      ],
+      "notes": "All publications per planet (historical)."
+    },
+    {
+      "key": "exoplanet_archive_pscomppars",
+      "name": "NASA Exoplanet Archive TAP \u2014 pscomppars",
+      "tier": 1,
+      "category": "exoplanets",
+      "license": "Public domain (NASA); attribution requested by IPAC",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://exoplanetarchive.ipac.caltech.edu/docs/TAP/usingTAP.html",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "pscomppars.csv",
+          "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+pscomppars&format=csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'pscomppars.csv' 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+pscomppars&format=csv'"
+        }
+      ],
+      "notes": "One row per planet, best-available composite parameters (primary for folder structure)."
+    },
+    {
+      "key": "exoplanet_archive_stellarhosts",
+      "name": "NASA Exoplanet Archive TAP \u2014 stellarhosts",
+      "tier": 1,
+      "category": "exoplanets",
+      "license": "Public domain (NASA); attribution requested by IPAC",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://exoplanetarchive.ipac.caltech.edu/docs/TAP/usingTAP.html",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "stellarhosts.csv",
+          "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+stellarhosts&format=csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'stellarhosts.csv' 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+stellarhosts&format=csv'"
+        }
+      ],
+      "notes": "Host-star parameters."
+    },
+    {
+      "key": "exoplanet_archive_toi",
+      "name": "NASA Exoplanet Archive TAP \u2014 toi",
+      "tier": 1,
+      "category": "exoplanets",
+      "license": "Public domain (NASA); attribution requested by IPAC",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://exoplanetarchive.ipac.caltech.edu/docs/TAP/usingTAP.html",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "toi.csv",
+          "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+toi&format=csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'toi.csv' 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+%2A+from+toi&format=csv'"
+        }
+      ],
+      "notes": "TESS Objects of Interest."
+    },
+    {
+      "key": "exoplanet_eu",
+      "name": "exoplanet.eu catalog (CSV)",
+      "tier": 1,
+      "category": "exoplanets",
+      "license": "Verify at probe time (exoplanet.eu terms of use)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://exoplanet.eu/catalog/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "catalog.csv",
+          "url": "https://exoplanet.eu/catalog/csv/",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'catalog.csv' 'https://exoplanet.eu/catalog/csv/'",
+          "note": "Server is slow to finish streaming; needs a generous timeout."
+        }
+      ],
+      "notes": "http:// 301-redirects to https://; the endpoint is alive but slow to fully respond (~1.5MB+ received within 25s, still streaming) \u2014 needs a generous timeout for the real pull in Fase 2, not just the default HTTP client timeout."
+    },
+    {
+      "key": "gaia_dr3_nss",
+      "name": "Gaia DR3 Non-Single Stars (gaiadr3.nss_two_body_orbit)",
+      "tier": 2,
+      "category": "multiple_systems",
+      "license": "ESA/Gaia \u2014 attribution required",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://gea.esac.esa.int/archive/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "nss_two_body_orbit.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+%2A+from+gaiadr3.nss_two_body_orbit",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'nss_two_body_orbit.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+%2A+from+gaiadr3.nss_two_body_orbit'",
+          "approx_bytes": 400000000
+        }
+      ],
+      "notes": "~800k rows, Tier 2. The ESA TAP HTTP 503 recorded during Fase 1 was a transient outage: re-probed 2026-08-21 and both this and gaia_dr3_tap answer normally. ~800k rows; smaller than the full Gaia source catalog but still large, so Tier 2. The Fase 1 HTTP 503 was a transient ESA-side outage \u2014 re-probed 2026-08-21 and the table answers normally.",
+      "approx_bytes": 400000000
+    },
+    {
+      "key": "gaia_dr3_tap",
+      "name": "Gaia DR3 via ESA TAP (full source catalog)",
+      "tier": 3,
+      "category": "stars",
+      "license": "ESA/Gaia \u2014 attribution required",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://gea.esac.esa.int/archive/",
+      "target_count": 37,
+      "targets": [
+        {
+          "filename": "subset_000.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+0+and+random_index+%3C+50000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_000.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+0+and+random_index+%3C+50000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_001.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+50000000+and+random_index+%3C+100000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_001.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+50000000+and+random_index+%3C+100000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_002.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+100000000+and+random_index+%3C+150000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_002.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+100000000+and+random_index+%3C+150000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_003.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+150000000+and+random_index+%3C+200000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_003.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+150000000+and+random_index+%3C+200000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_004.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+200000000+and+random_index+%3C+250000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_004.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+200000000+and+random_index+%3C+250000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_005.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+250000000+and+random_index+%3C+300000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_005.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+250000000+and+random_index+%3C+300000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_006.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+300000000+and+random_index+%3C+350000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_006.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+300000000+and+random_index+%3C+350000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_007.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+350000000+and+random_index+%3C+400000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_007.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+350000000+and+random_index+%3C+400000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_008.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+400000000+and+random_index+%3C+450000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_008.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+400000000+and+random_index+%3C+450000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_009.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+450000000+and+random_index+%3C+500000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_009.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+450000000+and+random_index+%3C+500000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_010.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+500000000+and+random_index+%3C+550000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_010.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+500000000+and+random_index+%3C+550000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_011.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+550000000+and+random_index+%3C+600000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_011.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+550000000+and+random_index+%3C+600000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_012.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+600000000+and+random_index+%3C+650000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_012.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+600000000+and+random_index+%3C+650000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_013.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+650000000+and+random_index+%3C+700000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_013.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+650000000+and+random_index+%3C+700000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_014.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+700000000+and+random_index+%3C+750000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_014.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+700000000+and+random_index+%3C+750000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_015.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+750000000+and+random_index+%3C+800000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_015.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+750000000+and+random_index+%3C+800000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_016.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+800000000+and+random_index+%3C+850000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_016.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+800000000+and+random_index+%3C+850000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_017.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+850000000+and+random_index+%3C+900000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_017.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+850000000+and+random_index+%3C+900000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_018.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+900000000+and+random_index+%3C+950000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_018.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+900000000+and+random_index+%3C+950000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_019.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+950000000+and+random_index+%3C+1000000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_019.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+950000000+and+random_index+%3C+1000000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_020.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1000000000+and+random_index+%3C+1050000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_020.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1000000000+and+random_index+%3C+1050000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_021.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1050000000+and+random_index+%3C+1100000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_021.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1050000000+and+random_index+%3C+1100000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_022.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1100000000+and+random_index+%3C+1150000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_022.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1100000000+and+random_index+%3C+1150000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_023.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1150000000+and+random_index+%3C+1200000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_023.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1150000000+and+random_index+%3C+1200000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_024.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1200000000+and+random_index+%3C+1250000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_024.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1200000000+and+random_index+%3C+1250000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_025.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1250000000+and+random_index+%3C+1300000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_025.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1250000000+and+random_index+%3C+1300000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_026.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1300000000+and+random_index+%3C+1350000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_026.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1300000000+and+random_index+%3C+1350000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_027.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1350000000+and+random_index+%3C+1400000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_027.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1350000000+and+random_index+%3C+1400000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_028.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1400000000+and+random_index+%3C+1450000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_028.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1400000000+and+random_index+%3C+1450000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_029.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1450000000+and+random_index+%3C+1500000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_029.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1450000000+and+random_index+%3C+1500000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_030.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1500000000+and+random_index+%3C+1550000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_030.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1500000000+and+random_index+%3C+1550000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_031.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1550000000+and+random_index+%3C+1600000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_031.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1550000000+and+random_index+%3C+1600000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_032.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1600000000+and+random_index+%3C+1650000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_032.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1600000000+and+random_index+%3C+1650000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_033.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1650000000+and+random_index+%3C+1700000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_033.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1650000000+and+random_index+%3C+1700000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_034.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1700000000+and+random_index+%3C+1750000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_034.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1700000000+and+random_index+%3C+1750000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_035.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1750000000+and+random_index+%3C+1800000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_035.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1750000000+and+random_index+%3C+1800000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        },
+        {
+          "filename": "subset_036.csv",
+          "url": "https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1800000000+and+random_index+%3C+1850000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'subset_036.csv' 'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY=select+source_id%2Cra%2Cdec%2Cparallax%2Cparallax_error%2Cpmra%2Cpmdec%2Cphot_g_mean_mag%2Cbp_rp%2Cradial_velocity%2Cteff_gspphot+from+gaiadr3.gaia_source+where+random_index+%3E%3D+1800000000+and+random_index+%3C+1850000000+and+%28parallax+%3E+10+or+phot_g_mean_mag+%3C+12%29'",
+          "approx_bytes": 9000000
+        }
+      ],
+      "notes": "Tier 3. Full gaia_source is 1.81e9 rows; the brief's default subset (parallax > 10 mas OR G < 12) is 3,602,117 rows \u2014 counted live 2026-08-21, not estimated. Split into 37 `random_index` slices so each one fits the sync endpoint (a 50M-wide slice measured ~90k rows in ~70 s). Still never runs without an explicit --tier 3 instruction. 1.81e9 rows. Default Tier 3 subset: parallax > 10 mas OR phot_g_mean_mag < 12 (see brief section 3) = 3,602,117 rows, counted live on 2026-08-21 rather than estimated. The Fase 1 HTTP 503 was a transient ESA-side outage; the server answers normally again. The subset is split into 37 `random_index` slices so each fits the sync endpoint (a 50M-wide slice measured ~90k rows in ~70 s). Never pulled without an explicit --tier 3 instruction.",
+      "approx_bytes": 333000000
+    },
+    {
+      "key": "hyg_database",
+      "name": "HYG Database (120k stars, common + Bayer/Flamsteed names)",
+      "tier": 1,
+      "category": "stars",
+      "license": "CC BY-SA 4.0 (per repo)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://github.com/astronexus/HYG-Database",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "hygdata_v41.csv",
+          "url": "https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/hygdata_v41.csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'hygdata_v41.csv' 'https://raw.githubusercontent.com/astronexus/HYG-Database/main/hyg/CURRENT/hygdata_v41.csv'",
+          "approx_bytes": 35000000
+        }
+      ],
+      "notes": "Starting point for the stars/ tree per the brief. Verified 2026-08-20: current file is hygdata_v41.csv (v4.1), not hyg_v42.csv as guessed initially \u2014 see CHANGELOG.",
+      "approx_bytes": 35000000
+    },
+    {
+      "key": "iau_star_names",
+      "name": "IAU Catalog of Star Names (IAU-CSN)",
+      "tier": 1,
+      "category": "stars",
+      "license": "CC BY (IAU-produced products); cite per file header",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://www.iau.org/science/scientific_bodies/working_groups/280/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "IAU-CSN.txt",
+          "url": "https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt",
+          "method": "GET",
+          "media_type": "text/plain",
+          "timeout_seconds": 90.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'IAU-CSN.txt' 'https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt'"
+        }
+      ],
+      "notes": "The brief's iau.org/public/themes/naming_stars/ page 404s (verified 2026-08-20 \u2014 see CHANGELOG). Replaced with the machine-readable IAU-CSN maintained by the IAU Division C Working Group on Star Names (WGSN) itself, which the iau.org page even points to as the canonical data file."
+    },
+    {
+      "key": "jpl_horizons",
+      "name": "JPL Horizons API (ephemeris & physical parameters)",
+      "tier": 1,
+      "category": "solar_system/planets",
+      "license": "Public domain (NASA/JPL)",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://ssd.jpl.nasa.gov/horizons/app.html",
+      "target_count": 10,
+      "targets": [
+        {
+          "filename": "sun.json",
+          "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%2710%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 60.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'sun.json' 'https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%2710%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27'"
+        },
+        {
+          "filename": "mercury.json",
+          "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27199%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 60.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'mercury.json' 'https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27199%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27'"
+        },
+        {
+          "filename": "venus.json",
+          "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27299%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 60.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'venus.json' 'https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27299%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27'"
+        },
+        {
+          "filename": "earth.json",
+          "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27399%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 60.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'earth.json' 'https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27399%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27'"
+        },
+        {
+          "filename": "mars.json",
+          "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27499%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 60.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'mars.json' 'https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27499%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27'"
+        },
+        {
+          "filename": "jupiter.json",
+          "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27599%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 60.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'jupiter.json' 'https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27599%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27'"
+        },
+        {
+          "filename": "saturn.json",
+          "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27699%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 60.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'saturn.json' 'https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27699%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27'"
+        },
+        {
+          "filename": "uranus.json",
+          "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27799%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 60.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'uranus.json' 'https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27799%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27'"
+        },
+        {
+          "filename": "neptune.json",
+          "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27899%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 60.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'neptune.json' 'https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27899%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27'"
+        },
+        {
+          "filename": "pluto.json",
+          "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27999%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 60.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'pluto.json' 'https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27999%27&OBJ_DATA=%27YES%27&MAKE_EPHEM=%27NO%27'"
+        }
+      ],
+      "notes": "Only physical parameters + minimal ephemeris pulled at Tier 1, not full trajectory grids."
+    },
+    {
+      "key": "jpl_sat_discovery",
+      "name": "JPL Satellite Discovery Circumstances",
+      "tier": 1,
+      "category": "solar_system/moons",
+      "license": "Public domain (NASA/JPL)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://ssd.jpl.nasa.gov/sats/discovery.html",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "discovery.html",
+          "url": "https://ssd.jpl.nasa.gov/sats/discovery.html",
+          "method": "GET",
+          "media_type": "text/html",
+          "timeout_seconds": 90.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'discovery.html' 'https://ssd.jpl.nasa.gov/sats/discovery.html'"
+        }
+      ]
+    },
+    {
+      "key": "jpl_sat_elem",
+      "name": "JPL Planetary Satellite Mean Elements",
+      "tier": 1,
+      "category": "solar_system/moons",
+      "license": "Public domain (NASA/JPL)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://ssd.jpl.nasa.gov/sats/elem/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "elem.html",
+          "url": "https://ssd.jpl.nasa.gov/sats/elem/",
+          "method": "GET",
+          "media_type": "text/html",
+          "timeout_seconds": 90.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'elem.html' 'https://ssd.jpl.nasa.gov/sats/elem/'"
+        }
+      ]
+    },
+    {
+      "key": "jpl_sat_phys_par",
+      "name": "JPL Planetary Satellite Physical Parameters",
+      "tier": 1,
+      "category": "solar_system/moons",
+      "license": "Public domain (NASA/JPL)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://ssd.jpl.nasa.gov/sats/phys_par/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "phys_par.html",
+          "url": "https://ssd.jpl.nasa.gov/sats/phys_par/",
+          "method": "GET",
+          "media_type": "text/html",
+          "timeout_seconds": 90.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'phys_par.html' 'https://ssd.jpl.nasa.gov/sats/phys_par/'"
+        }
+      ]
+    },
+    {
+      "key": "kepler_eb_catalog",
+      "name": "Kepler Eclipsing Binary Catalog",
+      "tier": 1,
+      "category": "multiple_systems",
+      "license": "Verify at probe time (Villanova KEBC terms)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://keplerebs.villanova.edu/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "kebc.csv",
+          "url": "https://keplerebs.villanova.edu/?format=csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'kebc.csv' 'https://keplerebs.villanova.edu/?format=csv'"
+        }
+      ],
+      "notes": "Plain http:// 400s on this server (verified 2026-08-20 \u2014 see CHANGELOG); use https://. Full bulk export found: https://keplerebs.villanova.edu/?format=csv returns the whole catalog (2920 systems) as one flat CSV \u2014 no pagination needed."
+    },
+    {
+      "key": "le_systeme_solaire",
+      "name": "Le Systeme Solaire REST API (bulk physical parameters, all bodies)",
+      "tier": 1,
+      "category": "solar_system/planets",
+      "license": "Open data, attribution requested (api.le-systeme-solaire.net)",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://api.le-systeme-solaire.net/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "bodies.json",
+          "url": "https://api.le-systeme-solaire.net/rest/bodies/",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 90.0,
+          "browser_fetchable": false,
+          "curl": "curl -L --compressed -H 'Authorization: Bearer $ASTRO_DL_SOLARSYSTEM_API_KEY' -o 'bodies.json' 'https://api.le-systeme-solaire.net/rest/bodies/'",
+          "required_headers": [
+            "Authorization"
+          ],
+          "approx_bytes": 500000,
+          "note": "554 bodies in one response: 8 planets, 4 dwarf planets, 479 moons, 55 asteroids, 7 comets, the Sun. Carries mass, volume, density, gravity, escape velocity, mean/equatorial/polar radius, flattening, sidereal orbit and rotation, axial tilt, mean temperature, orbital elements and discovery circumstances."
+        }
+      ],
+      "notes": "Needs an API key sent as `Authorization: Bearer <key>`; a free key is issued at https://api.le-systeme-solaire.net/generatekey.html. A working key is checked in as the default in core/config.py (see ASTRO_DL_SOLARSYSTEM_API_KEY to override), so this source is fetchable out of the box. Replacement for the dead nssdc_planetary_factsheet. One request returns 554 bodies (8 planets, 4 dwarf planets, 479 moons, 55 asteroids, 7 comets, the Sun) with mass, volume, density, gravity, escape velocity, mean/equatorial/polar radius, flattening, sidereal orbit and rotation, axial tilt, mean temperature, orbital elements and discovery circumstances \u2014 i.e. the same ground the fact sheets covered, plus moons. Requires an `Authorization: Bearer <key>` header; a free key ships as the default in core/config.py (ASTRO_DL_SOLARSYSTEM_API_KEY overrides it). Verified 2026-08-21: 200, 497 kB.",
+      "approx_bytes": 500000
+    },
+    {
+      "key": "messier_catalog",
+      "name": "Messier catalog",
+      "tier": 3,
+      "category": "deep_sky",
+      "license": "CC BY-SA 4.0 (per repo)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://github.com/mattiaverga/OpenNGC",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "NGC.csv",
+          "url": "https://raw.githubusercontent.com/mattiaverga/OpenNGC/master/database_files/NGC.csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'NGC.csv' 'https://raw.githubusercontent.com/mattiaverga/OpenNGC/master/database_files/NGC.csv'",
+          "note": "Messier objects are the rows with a non-empty `M` column."
+        }
+      ],
+      "notes": "Messier objects are a subset of OpenNGC (M column); same Tier-3-by-brief caveat as above."
+    },
+    {
+      "key": "mpc_comet_els",
+      "name": "MPC Comet Elements",
+      "tier": 2,
+      "category": "solar_system/small_bodies",
+      "license": "See MPC data-use policy (verify at probe time)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://www.minorplanetcenter.net/data",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "CometEls.txt",
+          "url": "https://www.minorplanetcenter.net/iau/MPCORB/CometEls.txt",
+          "method": "GET",
+          "media_type": "text/plain",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'CometEls.txt' 'https://www.minorplanetcenter.net/iau/MPCORB/CometEls.txt'",
+          "approx_bytes": 162000
+        }
+      ],
+      "notes": "Not explicitly in the brief's Tier 1 comet/asteroid list (only NEO+Sentry+CAD are named); file itself is small (a few thousand rows) so may be promotable to Tier 1 once confirmed.",
+      "approx_bytes": 162000
+    },
+    {
+      "key": "mpc_mpcorb",
+      "name": "Minor Planet Center \u2014 MPCORB full orbit database",
+      "tier": 2,
+      "category": "solar_system/small_bodies",
+      "license": "See MPC data-use policy (CC-ish, attribution required \u2014 verify at probe time)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://www.minorplanetcenter.net/data",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "MPCORB.DAT.gz",
+          "url": "https://www.minorplanetcenter.net/iau/MPCORB/MPCORB.DAT.gz",
+          "method": "GET",
+          "media_type": "application/gzip",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'MPCORB.DAT.gz' 'https://www.minorplanetcenter.net/iau/MPCORB/MPCORB.DAT.gz'",
+          "approx_bytes": 200000000
+        }
+      ],
+      "notes": "~1.4M objects, explicitly Tier 2 in the brief.",
+      "approx_bytes": 200000000
+    },
+    {
+      "key": "msc_catalog",
+      "name": "Multiple Star Catalog (MSC, VizieR J/ApJS/235/6)",
+      "tier": 1,
+      "category": "multiple_systems",
+      "license": "CDS \u2014 attribution required",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=J/ApJS/235/6",
+      "target_count": 4,
+      "targets": [
+        {
+          "filename": "catalog.csv",
+          "url": "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22J%2FApJS%2F235%2F6%2Fcatalog%22",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'catalog.csv' 'https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22J%2FApJS%2F235%2F6%2Fcatalog%22'"
+        },
+        {
+          "filename": "systems.csv",
+          "url": "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22J%2FApJS%2F235%2F6%2Fsystems%22",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'systems.csv' 'https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22J%2FApJS%2F235%2F6%2Fsystems%22'"
+        },
+        {
+          "filename": "orbits.csv",
+          "url": "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22J%2FApJS%2F235%2F6%2Forbits%22",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'orbits.csv' 'https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22J%2FApJS%2F235%2F6%2Forbits%22'"
+        },
+        {
+          "filename": "notes.csv",
+          "url": "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22J%2FApJS%2F235%2F6%2Fnotes%22",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'notes.csv' 'https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22J%2FApJS%2F235%2F6%2Fnotes%22'"
+        }
+      ],
+      "notes": "Table is J/ApJS/235/6/catalog (there is no 'table1' \u2014 verified via TAP_SCHEMA 2026-08-20, see CHANGELOG). Other tables in this catalog: notes, orbits, systems."
+    },
+    {
+      "key": "nssdc_planetary_factsheet",
+      "name": "NASA NSSDC Planetary Fact Sheets",
+      "tier": 1,
+      "category": "solar_system/planets",
+      "license": "Public domain (NASA)",
+      "status": "retired",
+      "fetchable": false,
+      "landing_page": "https://www.nasa.gov/nssdc/",
+      "target_count": 0,
+      "targets": [],
+      "unfetchable_reason": "endpoint retired \u2014 use le_systeme_solaire + jpl_horizons instead",
+      "replaced_by": "le_systeme_solaire + jpl_horizons",
+      "notes": "Every /planetary/factsheet/ path (index and per-planet pages alike) 307-redirects to the generic https://www.nasa.gov/nssdc/ landing page \u2014 re-verified 2026-08-21, byte-identical 245 kB response for marsfact.html and planet_table_ratio.html. No live NASA-hosted copy of the comparison tables was found. The same physical parameters now come from le_systeme_solaire (bulk JSON) and jpl_horizons (OBJ_DATA), both of which are authoritative. DEAD despite HTTP 200 (verified 2026-08-20 in Fase 3, after Fase 1's probe wrongly marked it alive on status code alone): the whole /planetary/factsheet/ path \u2014 including per-planet pages like marsfact.html \u2014 307-redirects to https://www.nasa.gov/nssdc/, a generic 'NSSDC status' landing page with none of the actual fact-sheet data. No live replacement URL found for the classic per-planet comparison table. Physical parameters for planets are pulled from jpl_horizons's OBJ_DATA instead (already source [A] in the brief), which covers the same ground (mass, radius, density, gravity, rotation, etc.) straight from JPL, and \u2014 added 2026-08-21 \u2014 from le_systeme_solaire, which returns the same comparison-table quantities for 554 bodies (planets, dwarf planets and moons) in one JSON response. Re-verified 2026-08-21: marsfact.html and planet_table_ratio.html both return the byte-identical 245 kB nasa.gov landing page, so the redirect is not path-specific and there is nothing left to salvage here. This source is excluded from the build; the raw 2026-08-20 response is kept as-is (it is the honest evidence of what the endpoint actually returns) but never parsed as fact-sheet content."
+    },
+    {
+      "key": "open_exoplanet_catalogue",
+      "name": "Open Exoplanet Catalogue (XML, cross-check)",
+      "tier": 1,
+      "category": "exoplanets",
+      "license": "MIT (per repo)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://github.com/OpenExoplanetCatalogue/open_exoplanet_catalogue",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "systems.xml.gz",
+          "url": "https://raw.githubusercontent.com/OpenExoplanetCatalogue/oec_gzip/master/systems.xml.gz",
+          "method": "GET",
+          "media_type": "application/gzip",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'systems.xml.gz' 'https://raw.githubusercontent.com/OpenExoplanetCatalogue/oec_gzip/master/systems.xml.gz'",
+          "approx_bytes": 1054000,
+          "note": "The whole catalogue as one gzipped XML, not the thousands of per-system files in the main repo. Maintained by the OEC project itself in the companion `oec_gzip` repo and refreshed on every commit."
+        }
+      ],
+      "notes": "Earlier notes said this source was unreachable because api.github.com and codeload.github.com are blocked here. The oec_gzip mirror sidesteps both: it is a single file on raw.githubusercontent.com, verified 200/1.05 MB 2026-08-21. The main repo has one XML per system (thousands of files) and its tarball endpoints (api.github.com / codeload.github.com) are blocked here \u2014 but the OEC project publishes the whole catalogue as a single gzipped XML in its companion repo, refreshed on every commit: raw.githubusercontent.com/OpenExoplanetCatalogue/oec_gzip/master/systems.xml.gz. Verified 2026-08-21: 200, 1.05 MB. That is what the downloader uses, so this source is no longer skipped.",
+      "approx_bytes": 1054000
+    },
+    {
+      "key": "openngc",
+      "name": "OpenNGC (NGC/IC objects)",
+      "tier": 3,
+      "category": "deep_sky",
+      "license": "CC BY-SA 4.0 (per repo)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://github.com/mattiaverga/OpenNGC",
+      "target_count": 2,
+      "targets": [
+        {
+          "filename": "NGC.csv",
+          "url": "https://raw.githubusercontent.com/mattiaverga/OpenNGC/master/database_files/NGC.csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'NGC.csv' 'https://raw.githubusercontent.com/mattiaverga/OpenNGC/master/database_files/NGC.csv'"
+        },
+        {
+          "filename": "addendum.csv",
+          "url": "https://raw.githubusercontent.com/mattiaverga/OpenNGC/master/database_files/addendum.csv",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 120.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'addendum.csv' 'https://raw.githubusercontent.com/mattiaverga/OpenNGC/master/database_files/addendum.csv'",
+          "note": "Non-NGC/IC objects the project tracks alongside the main catalogue."
+        }
+      ],
+      "notes": "Brief files this whole section under '(opsional, tier 3)', though NGC+IC is only ~13000 rows \u2014 small enough to reconsider as Tier 1 on confirmation."
+    },
+    {
+      "key": "sb9_catalog",
+      "name": "SB9: Spectroscopic Binary Orbits",
+      "tier": 1,
+      "category": "multiple_systems",
+      "license": "CDS \u2014 attribution required",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=B/sb9",
+      "target_count": 3,
+      "targets": [
+        {
+          "filename": "main.csv",
+          "url": "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22B%2Fsb9%2Fmain%22",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'main.csv' 'https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22B%2Fsb9%2Fmain%22'"
+        },
+        {
+          "filename": "orbits.csv",
+          "url": "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22B%2Fsb9%2Forbits%22",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'orbits.csv' 'https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22B%2Fsb9%2Forbits%22'"
+        },
+        {
+          "filename": "alias.csv",
+          "url": "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22B%2Fsb9%2Falias%22",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'alias.csv' 'https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22B%2Fsb9%2Falias%22'"
+        }
+      ],
+      "notes": "ULB's own mainform.cgi is a search-only CGI form with no obvious bulk-export URL (verified 2026-08-20). SB9 is mirrored on VizieR as B/sb9/{main,orbits,alias} \u2014 used instead for the actual pull."
+    },
+    {
+      "key": "sbdb_query_full",
+      "name": "JPL SBDB Query API \u2014 all classes (MBA/IMB/OMB/MCA/TJN/CEN/TNO/AST/HTC/JFC/etc.)",
+      "tier": 2,
+      "category": "solar_system/small_bodies",
+      "license": "Public domain (NASA/JPL)",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://ssd-api.jpl.nasa.gov/doc/sbdb_query.html",
+      "target_count": 11,
+      "targets": [
+        {
+          "filename": "MBA.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=MBA",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'MBA.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=MBA'"
+        },
+        {
+          "filename": "IMB.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=IMB",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'IMB.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=IMB'"
+        },
+        {
+          "filename": "OMB.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=OMB",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'OMB.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=OMB'"
+        },
+        {
+          "filename": "MCA.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=MCA",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'MCA.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=MCA'"
+        },
+        {
+          "filename": "TJN.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=TJN",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'TJN.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=TJN'"
+        },
+        {
+          "filename": "CEN.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=CEN",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'CEN.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=CEN'"
+        },
+        {
+          "filename": "TNO.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=TNO",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'TNO.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=TNO'"
+        },
+        {
+          "filename": "AST.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=AST",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'AST.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=AST'"
+        },
+        {
+          "filename": "HTC.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=HTC",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'HTC.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=HTC'"
+        },
+        {
+          "filename": "JFC.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=JFC",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'JFC.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=JFC'"
+        },
+        {
+          "filename": "ETc.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=ETc",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'ETc.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=ETc'"
+        }
+      ],
+      "notes": "MBA alone is ~1.38M rows; Tier 2, so `astro pull --all --tier 2` gates it. MBA alone is ~1.2M objects; brief marks 'SBDB full semua kelas' as Tier 2."
+    },
+    {
+      "key": "sbdb_query_neo",
+      "name": "JPL SBDB Query API \u2014 NEO classes (IEO/ATE/APO/AMO)",
+      "tier": 1,
+      "category": "solar_system/small_bodies",
+      "license": "Public domain (NASA/JPL)",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://ssd-api.jpl.nasa.gov/doc/sbdb_query.html",
+      "target_count": 4,
+      "targets": [
+        {
+          "filename": "IEO.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=IEO",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'IEO.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=IEO'"
+        },
+        {
+          "filename": "ATE.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=ATE",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'ATE.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=ATE'"
+        },
+        {
+          "filename": "APO.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=APO",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'APO.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=APO'"
+        },
+        {
+          "filename": "AMO.json",
+          "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=AMO",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'AMO.json' 'https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name%2Cspkid%2Cpdes%2Cname%2Ca%2Ce%2Ci%2Com%2Cw%2Cma%2Cepoch%2CH%2Cdiameter%2Calbedo%2Cclass%2Cneo%2Cpha&sb-class=AMO'"
+        }
+      ]
+    },
+    {
+      "key": "simbad_tap",
+      "name": "SIMBAD TAP (identifiers, object types, cross-match)",
+      "tier": 1,
+      "category": "stars",
+      "license": "CDS \u2014 attribution required",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://simbad.cds.unistra.fr/simbad/sim-tap",
+      "target_count": 2,
+      "targets": [
+        {
+          "filename": "bright_basic.csv",
+          "url": "https://simbad.cds.unistra.fr/simbad/sim-tap/sync?request=doQuery&lang=adql&format=csv&query=select+b.main_id%2C+b.ra%2C+b.dec%2C+b.otype_txt%2C+b.sp_type%2C+b.plx_value%2C+b.plx_err%2C+b.pmra%2C+b.pmdec%2C+b.rvz_radvel%2C+f.V%2C+f.B+from+basic+as+b+join+allfluxes+as+f+on+f.oidref+%3D+b.oid+where+f.V+%3C+10",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'bright_basic.csv' 'https://simbad.cds.unistra.fr/simbad/sim-tap/sync?request=doQuery&lang=adql&format=csv&query=select+b.main_id%2C+b.ra%2C+b.dec%2C+b.otype_txt%2C+b.sp_type%2C+b.plx_value%2C+b.plx_err%2C+b.pmra%2C+b.pmdec%2C+b.rvz_radvel%2C+f.V%2C+f.B+from+basic+as+b+join+allfluxes+as+f+on+f.oidref+%3D+b.oid+where+f.V+%3C+10'",
+          "note": "Magnitudes live in `allfluxes`, not `basic` \u2014 the join is required. V < 10 keeps this to the naked-eye/small-telescope population that actually overlaps HYG and the exoplanet hosts, instead of dumping all >15M rows of `basic`."
+        },
+        {
+          "filename": "bright_identifiers.csv",
+          "url": "https://simbad.cds.unistra.fr/simbad/sim-tap/sync?request=doQuery&lang=adql&format=csv&query=select+i.id%2C+i.oidref%2C+b.main_id+from+ident+as+i+join+basic+as+b+on+b.oid+%3D+i.oidref+join+allfluxes+as+f+on+f.oidref+%3D+b.oid+where+f.V+%3C+10",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'bright_identifiers.csv' 'https://simbad.cds.unistra.fr/simbad/sim-tap/sync?request=doQuery&lang=adql&format=csv&query=select+i.id%2C+i.oidref%2C+b.main_id+from+ident+as+i+join+basic+as+b+on+b.oid+%3D+i.oidref+join+allfluxes+as+f+on+f.oidref+%3D+b.oid+where+f.V+%3C+10'",
+          "note": "Cross-identifiers (HD/HIP/Gaia/TYC/... aliases) for the same subset."
+        }
+      ],
+      "notes": "`basic` alone is >15M rows, so there is deliberately no full dump. Instead two bounded ADQL queries are pulled: basic joined to allfluxes for V < 10 (parameters) and the matching `ident` rows (cross-identifiers). Magnitudes live in `allfluxes`, not `basic` \u2014 the join is mandatory, a bare `where V < 10` returns HTTP 400 'Unknown column V' (verified 2026-08-21). V < 10 is the population that actually overlaps HYG and the exoplanet hosts."
+    },
+    {
+      "key": "spacetrack",
+      "name": "Space-Track.org",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": null,
+      "status": "credentialed",
+      "fetchable": false,
+      "landing_page": "https://www.space-track.org/documentation#/api",
+      "target_count": 3,
+      "targets": [
+        {
+          "filename": "gp.json",
+          "url": "https://www.space-track.org/basicspacedata/query/class/gp/orderby/NORAD_CAT_ID/format/json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'gp.json' 'https://www.space-track.org/basicspacedata/query/class/gp/orderby/NORAD_CAT_ID/format/json'",
+          "note": "Current GP element set for every catalogued object."
+        },
+        {
+          "filename": "satcat.json",
+          "url": "https://www.space-track.org/basicspacedata/query/class/satcat/orderby/NORAD_CAT_ID/format/json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'satcat.json' 'https://www.space-track.org/basicspacedata/query/class/satcat/orderby/NORAD_CAT_ID/format/json'",
+          "note": "Space-Track's own satellite catalogue, incl. decay data."
+        },
+        {
+          "filename": "decay.json",
+          "url": "https://www.space-track.org/basicspacedata/query/class/decay/orderby/NORAD_CAT_ID/format/json",
+          "method": "GET",
+          "media_type": "application/json",
+          "timeout_seconds": 900.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'decay.json' 'https://www.space-track.org/basicspacedata/query/class/decay/orderby/NORAD_CAT_ID/format/json'"
+        }
+      ],
+      "unfetchable_reason": "needs credentials: ASTRO_DL_SPACETRACK_USER, ASTRO_DL_SPACETRACK_PASS",
+      "credential_env": [
+        "ASTRO_DL_SPACETRACK_USER",
+        "ASTRO_DL_SPACETRACK_PASS"
+      ],
+      "notes": "Free account required. The downloader POSTs identity/password to https://www.space-track.org/ajaxauth/login to get a session cookie, then GETs the query URLs above. Without both env vars set the source is skipped, never half-attempted. Requires a free account. SKIP if ASTRO_DL_SPACETRACK_USER/PASS are not set; record the skip in CHANGELOG.md."
+    },
+    {
+      "key": "ucs_satellite_db",
+      "name": "UCS Satellite Database",
+      "tier": 1,
+      "category": "solar_system/artificial_satellites",
+      "license": "Verify at probe time (UCS terms of use)",
+      "status": "direct",
+      "fetchable": true,
+      "landing_page": "https://www.ucs.org/resources/satellite-database",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "UCS-Satellite-Database.xlsx",
+          "url": "https://www.ucs.org/media/11492",
+          "method": "GET",
+          "media_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'UCS-Satellite-Database.xlsx' 'https://www.ucs.org/media/11492'",
+          "approx_bytes": 1498000,
+          "note": "Redirects to the dated file under /sites/default/files/ \u2014 following redirects lands on the current release (1.5 MB xlsx as of 2026-08-21)."
+        }
+      ],
+      "notes": "Previously marked as needing credentials because the landing page only offers an email opt-in form. The media link is public and unauthenticated \u2014 verified 200 with the xlsx content type on 2026-08-21, so no opt-in is actually needed. ucsusa.org redirects to ucs.org. The landing page only offers an email opt-in form, which is why Fase 1 marked this credentialed \u2014 but that was wrong: the underlying media link https://www.ucs.org/media/11492 is public and unauthenticated, redirecting to the current dated .xlsx under /sites/default/files/. Verified 2026-08-21: 200, 1.5 MB, spreadsheetml content type. No opt-in needed, so requires_credentials is now False and the source is pulled normally.",
+      "approx_bytes": 1498000
+    },
+    {
+      "key": "usgs_gazetteer",
+      "name": "IAU/USGS Gazetteer of Planetary Nomenclature",
+      "tier": 1,
+      "category": "solar_system/planets",
+      "license": "Public domain (USGS/IAU)",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://planetarynames.wr.usgs.gov/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "nomenclature.html",
+          "url": "https://planetarynames.wr.usgs.gov/SearchResults",
+          "method": "POST",
+          "media_type": "text/html",
+          "timeout_seconds": 180.0,
+          "browser_fetchable": false,
+          "curl": "curl -L --compressed -X POST --data-urlencode 'Target=' --data-urlencode 'Feature Type=' --data-urlencode 'Continent=' --data-urlencode 'Ethnicity=' --data-urlencode 'Reference=' --data-urlencode 'System=' -o 'nomenclature.html' 'https://planetarynames.wr.usgs.gov/SearchResults'",
+          "form_data": {
+            "Target": "",
+            "Feature Type": "",
+            "Continent": "",
+            "Ethnicity": "",
+            "Reference": "",
+            "System": ""
+          },
+          "approx_bytes": 42600000,
+          "note": "An empty POST to /SearchResults returns the entire gazetteer in one HTML table \u2014 16,353 approved features across every body (Moon 9,201, Mars 2,096, Venus 2,046, Mercury 606, Titan 305, ...), with feature ID, name, target, diameter, centre/bounding lat-lon, coordinate system, continent, ethnicity, feature type + code, quad, approval status and date. Parsed with build/html_tables.py, same as the JPL satellite pages."
+        }
+      ],
+      "notes": "Earlier notes claimed this source was only available as ~100 per-body GIS shapefiles. That was wrong: the search form itself bulk-exports. The shapefiles at https://planetarynames.wr.usgs.gov/GIS_Downloads remain the option if geometry (not just centre coordinates) is ever needed. Promoted to Tier 1 on 2026-08-21 after the size was actually measured: an empty POST to /SearchResults bulk-exports the whole gazetteer in a single HTML table \u2014 16,353 approved features across all bodies (~43 MB), not the 'tens of thousands, unknown size' the Fase 1 note assumed. The per-body GIS shapefiles at /GIS_Downloads are only needed if feature geometry (not centre coordinates) is wanted.",
+      "approx_bytes": 42600000
+    },
+    {
+      "key": "vizier_tap",
+      "name": "VizieR TAP (access to thousands of catalogs)",
+      "tier": 1,
+      "category": "stars",
+      "license": "CDS \u2014 attribution required per catalog",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://vizier.cds.unistra.fr/",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "catalog_metadata.tsv",
+          "url": "https://vizier.cds.unistra.fr/viz-bin/asu-tsv?-source=METAcat&-out.max=unlimited",
+          "method": "GET",
+          "media_type": "text/tab-separated-values",
+          "timeout_seconds": 300.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'catalog_metadata.tsv' 'https://vizier.cds.unistra.fr/viz-bin/asu-tsv?-source=METAcat&-out.max=unlimited'",
+          "approx_bytes": 4650000,
+          "note": "VizieR's own METAcat table: the index of every catalogue VizieR serves. Used to resolve catalogue designations before issuing a per-catalogue TAP query (wds/sb9/msc below are those queries)."
+        }
+      ],
+      "notes": "TAPVizieR is a service access point rather than a dataset, so the target here is its catalogue index. Note TAP_SCHEMA queries on TAPVizieR return HTTP 500 (server-side SQL translation bug, re-checked 2026-08-21) \u2014 the ASU METAcat endpoint is the working way to enumerate catalogues. Used per-catalog (WDS, SB9, MSC), not a bulk dump. Its own downloadable artifact is METAcat \u2014 VizieR's index of every catalogue it serves \u2014 via the ASU endpoint. Note TAP_SCHEMA queries against TAPVizieR return HTTP 500 (server-side SQL translation bug, re-checked 2026-08-21), so METAcat is the working way to enumerate catalogues.",
+      "approx_bytes": 4650000
+    },
+    {
+      "key": "wds_catalog",
+      "name": "Washington Double Star Catalog (via VizieR B/wds)",
+      "tier": 1,
+      "category": "multiple_systems",
+      "license": "CDS \u2014 attribution required",
+      "status": "query",
+      "fetchable": true,
+      "landing_page": "https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=B/wds",
+      "target_count": 1,
+      "targets": [
+        {
+          "filename": "wds.csv",
+          "url": "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22B%2Fwds%2Fwds%22",
+          "method": "GET",
+          "media_type": "text/csv",
+          "timeout_seconds": 600.0,
+          "browser_fetchable": true,
+          "curl": "curl -L --compressed -o 'wds.csv' 'https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync?request=doQuery&lang=adql&format=csv&query=select+%2A+from+%22B%2Fwds%2Fwds%22'"
+        }
+      ]
+    }
+  ]
+}
