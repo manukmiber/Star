@@ -14,11 +14,12 @@ guessed — see CHANGELOG.md.
 
 from __future__ import annotations
 
+import os
 from typing import Awaitable, Callable
 
 import httpx
 
-from .core.http import get
+from .core.http import get, post
 
 Fetcher = Callable[[httpx.AsyncClient], Awaitable[list[tuple[str, bytes]]]]
 
@@ -28,6 +29,10 @@ SBDB_QUERY = "https://ssd-api.jpl.nasa.gov/sbdb_query.api"
 HORIZONS_API = "https://ssd.jpl.nasa.gov/api/horizons.api"
 CNEOS_CAD = "https://ssd-api.jpl.nasa.gov/cad.api"
 CNEOS_SENTRY = "https://ssd-api.jpl.nasa.gov/sentry.api"
+SPACETRACK_LOGIN = "https://www.space-track.org/ajaxauth/login"
+SPACETRACK_QUERY = (
+    "https://www.space-track.org/basicspacedata/query/class/gp/decay_date/null-val/format/json"
+)
 
 
 def static_file(url: str, filename: str, timeout: float = 90.0) -> Fetcher:
@@ -111,6 +116,29 @@ def horizons_bodies(bodies: dict[str, str], timeout: float = 60.0) -> Fetcher:
             )
             results.append((f"{name}.json", response.content))
         return results
+
+    return fetch
+
+
+def spacetrack_gp(timeout: float = 120.0) -> Fetcher:
+    """Logs in with ASTRO_DL_SPACETRACK_USER/PASS and pulls the current GP catalog."""
+
+    async def fetch(client: httpx.AsyncClient) -> list[tuple[str, bytes]]:
+        identity = os.environ["ASTRO_DL_SPACETRACK_USER"]
+        password = os.environ["ASTRO_DL_SPACETRACK_PASS"]
+        login_response = await post(
+            client,
+            SPACETRACK_LOGIN,
+            data={"identity": identity, "password": password},
+            timeout=timeout,
+        )
+        # Space-Track returns a JSON-encoded empty string body on success, and a JSON
+        # error object (e.g. {"Login":"Failed"}) on failure.
+        login_body = login_response.json()
+        if login_body:
+            raise RuntimeError(f"Space-Track login failed: {login_body}")
+        response = await get(client, SPACETRACK_QUERY, timeout=timeout)
+        return [("gp.json", response.content)]
 
     return fetch
 
@@ -213,7 +241,10 @@ DOWNLOAD_PLAN["mpc_comet_els"] = static_file(
 )  # Tier 2, not run until confirmed
 
 DOWNLOAD_PLAN["ucs_satellite_db"] = None  # requires_credentials, see registry notes
-DOWNLOAD_PLAN["spacetrack"] = None  # requires_credentials
+if os.environ.get("ASTRO_DL_SPACETRACK_USER") and os.environ.get("ASTRO_DL_SPACETRACK_PASS"):
+    DOWNLOAD_PLAN["spacetrack"] = spacetrack_gp()
+else:
+    DOWNLOAD_PLAN["spacetrack"] = None  # requires_credentials, see registry notes
 DOWNLOAD_PLAN["usgs_gazetteer"] = None  # Tier 2; nomenclature is per-body GIS shapefiles
 # (asc-planetarynames-data.s3, ~100+ files), not a flat table — needs a dedicated
 # shapefile-aware downloader, deferred rather than rushed.
