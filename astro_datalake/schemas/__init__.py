@@ -1,1 +1,1 @@
-"""Pydantic v2 schemas for normalized objects. Populated starting Fase 3."""
+"""JSON-schema definitions for normalized objects live in data/_catalog/schema/."""

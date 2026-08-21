@@ -1,5 +1,130 @@
 # Changelog
 
+## 2026-08-21 — Fase 8: Link checker, Space-Track sesuai dokumentasi, TUI, Termux
+
+### `astro links` — tes semua link, bukan cuma status code
+
+Fase 1 percaya status code dan tertipu `nssdc_planetary_factsheet` (HTTP 200
+tapi redirect ke halaman landing NASA). Link checker baru menuntut tiga hal:
+status < 400, tidak redirect keluar dari host **atau path** yang diminta, dan
+isi body benar-benar berbentuk format yang akan di-parse downloader.
+
+Downloader sekarang mendeklarasikan sendiri URL yang akan dimintanya
+(`_declare` / `declared_requests`), jadi yang diuji adalah target download
+sungguhan — bukan daftar URL terpisah yang gampang basi. Query berat dicek
+lewat kembaran murah (`top 5` untuk TAP, `limit=5` untuk SBDB, `limit/1`
+untuk Space-Track) dan hanya 32 KB pertama body yang dibaca: 74 link
+terverifikasi dengan biaya kilobyte.
+
+Temuan nyata saat dijalankan, dan perbaikannya:
+
+- OpenNGC/Messier ditandai rusak padahal sehat — CSV-nya delimiter `;`.
+  Sniffer sekarang mengenali `,` `;` tab `|`.
+- Kepler EB catalog ditandai rusak — file dibuka baris komentar `##`
+  sebelum header. Sniffer melewati preamble berkomentar.
+- Endpoint Space-Track menjawab 401 dan dihitung rusak; padahal 401 justru
+  bukti endpoint hidup dan terjaga. 401/403 kini status tersendiri.
+- VizieR (CDS) sempat 500 lalu normal lagi beberapa menit kemudian.
+  Ditambah retry, dan **kegagalan sisi server dipisahkan dari link rusak**:
+  5xx, timeout, atau pesan seperti "Unable to check the ADQL query!" /
+  "TAP service too busy" dilaporkan sebagai *server-side outage — retry
+  later*, bukan link mati. Pesan error server ikut ditampilkan, karena
+  "HTTP 400" saja tidak memberi tahu apa-apa.
+- Laporan single-source sempat menimpa laporan lengkap; sekarang di-merge.
+
+Hasil run penuh 2026-08-21 (46 sumber / 74 URL): **37 siap didownload**,
+4 kena gangguan server CDS/VizieR, 2 butuh kredensial, 2 access point tanpa
+dataset sendiri, 1 benar-benar mati (`nssdc_planetary_factsheet`).
+
+### Sumber yang tadinya tanpa downloader
+
+Tiga celah ditutup setelah link-nya terbukti hidup:
+
+- `gaia_dr3_nss` dan `gaia_dr3_tap` — ESA TAP sudah pulih dari 503 di Fase 1.
+  Ditambah fetcher TAP **async (UWS)**: POST `/async`, poll `/phase`, ambil
+  `/results/result`. Endpoint sync memotong di MAXREC (2000 baris di ESA),
+  jadi tidak mungkin dipakai untuk katalog. Subset Tier 3 tetap sesuai brief:
+  `parallax > 10 or phot_g_mean_mag < 12`.
+- `open_exoplanet_catalogue` — ada mirror `oec_gzip/systems.xml.gz`, satu
+  file gzip berisi seluruh sistem, jadi masalah "ribuan file XML" hilang.
+  Di sesi ini github.com diblokir proxy (403), tapi di mesin/HP biasa jalan.
+
+Sisanya sengaja tanpa downloader dan tercatat alasannya: `nssdc` (mati),
+`simbad_tap` + `vizier_tap` (titik akses, bukan dataset), `usgs_gazetteer`
+(shapefile per-benda), `ucs_satellite_db` (di balik form email).
+
+### Space-Track sesuai `space-track.org/documentation#/api`
+
+Ditulis ulang jadi klien penuh di `sources/spacetrack.py`. Dokumentasi
+resmi diambil dan dibaca ulang 2026-08-21; yang bersifat aturan ikut
+dipaksakan, bukan sekadar dicatat:
+
+- Login cookie `/ajaxauth/login`, logout `/ajaxauth/logout`. Sukses = JSON
+  string kosong; gagal = objek JSON. Cookie `chocolatechip` ikut diperiksa.
+- URL REST lengkap: controller (`basicspacedata`, `expandedspacedata`,
+  `fileshare`, `combinedopsdata`, `publicfiles`), action `query`/`modeldef`,
+  predikat berurutan, `orderby`, `limit/N,offset`, `predicates`, `distinct`,
+  `metadata`, `emptyresult/show`, `format`.
+- Operator `>` `<` `,` `--` `~~` `^` `null-val` `now-N` dipertahankan saat
+  percent-encoding; `>` jadi `%3E` persis seperti contoh di dokumentasi,
+  sementara `/` dalam nilai justru di-encode agar tidak merusak path.
+- **Throttle**: klien menahan diri di 25 req/menit dan 275 req/jam dengan
+  jeda minimal 2 detik — di bawah batas resmi 30/menit dan 300/jam.
+- **Frekuensi per class**: tabel data-retrieval di dokumentasi (GP 1/jam,
+  SATCAT & BOXSCORE 1/hari setelah 1700 UTC, CDM tiap 8 jam, GP_HISTORY
+  1/seumur-hidup, TIP 1/jam, DECAY 1/hari) dikodekan di `RETRIEVAL_POLICY`
+  dan dicek terhadap ledger di disk. Pull yang terlalu cepat dilewati
+  dengan alasan, bukan dikirim — melanggar aturan itu cara resmi untuk
+  kena suspend.
+- Batching comma-delimited untuk banyak objek, persis seperti yang diminta
+  dokumentasi ("do not send hundreds of individual /class/gp/ queries").
+- Query bawaan GP memakai pola yang disarankan dokumentasi:
+  `/decay_date/null-val/epoch/%3Enow-10/`.
+
+CLI baru: `astro spacetrack policy | query | modeldef`, dengan `--dry-run`
+yang mencetak URL tanpa mengirim apa pun.
+
+### TUI (`astro tui`)
+
+Textual, empat tab (Sumber / Link / Space-Track / Log). Tabel 46 sumber
+dengan filter teks + tier, panel detail yang menampilkan URL HTTP persis
+yang akan diminta sumber itu, pull dan cek-link jalan di worker sehingga UI
+tetap responsif. Panel Space-Track menampilkan status kredensial, batas
+yang dipatuhi, dan kapan tiap class boleh diambil lagi.
+
+Logika data dipisah ke `tui/state.py` (tanpa Textual) supaya bisa dites
+tanpa terminal; sisanya dites headless lewat Pilot, termasuk layout sempit.
+
+### Termux
+
+- **Dependency inti jadi 100% pure Python.** `pydantic` dibuang dari core
+  (`pydantic-core` adalah ekstensi Rust tanpa wheel Termux) dan diganti
+  dataclass stdlib; `polars`/`beautifulsoup4`/`jsonschema` pindah ke extra
+  `build`. Dependency yang ternyata tidak pernah diimpor (`pandas`,
+  `pyarrow`, `astropy`, `astroquery`, `tqdm`) dihapus. `beautifulsoup4`
+  yang selama ini terpakai tapi tidak terdaftar kini terdaftar.
+  Diverifikasi: `pip install .` di venv bersih tidak memasang satu pun
+  `.so`, dan `astro pull cneos_sentry` tetap menarik data sungguhan.
+- **Path data tidak lagi diturunkan dari `__file__`.** Kalau paket
+  di-install (hal normal di Termux), data akan mendarat di site-packages.
+  Sekarang: `$ASTRO_DL_HOME` → repo (kalau source checkout) →
+  `$XDG_DATA_HOME/astro-datalake` → `~/.local/share/astro-datalake`.
+- `astro build`/`astro verify` memberi instruksi pemasangan yang jelas
+  (termasuk catatan khusus Termux untuk polars) alih-alih ImportError.
+- `astro doctor` baru: Python, deteksi Termux, folder data + izin tulis,
+  ruang disk, paket opsional, lebar terminal, `TERM`, kredensial
+  Space-Track, dan jangkauan jaringan ke tiap penyedia data.
+- TUI beralih ke layout satu kolom di bawah 80 kolom (ukuran layar HP).
+- `scripts/termux-setup.sh` untuk pemasangan sekali jalan.
+
+### Tes
+
+75 tes lolos: `test_spacetrack.py` (bentuk URL vs dokumentasi, encoding
+operator, throttle, ledger, login sukses/gagal, 401, 429+retry, logout),
+`test_linkcheck.py` (sniffing tiap format, redirect landing-page,
+auth-wall, outage server vs link rusak, kembaran check-URL), dan
+`test_tui.py` (headless lewat Pilot, termasuk layout HP).
+
 ## 2026-08-20 — Fase 3-4: Build struktur folder + Verifikasi
 
 Full detail ada di masing-masing pesan commit dan di `REPORT.md`; ringkasan
