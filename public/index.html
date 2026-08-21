@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Astro Data Lake — download index</title>
+<meta name="description" content="Every public astronomy data source this project pulls from, with its exact download link.">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>🛰️</text></svg>">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Astro Data Lake — download index</h1>
+  <p class="sub">Every source this project pulls from, with the exact URL, method and file it produces.</p>
+</header>
+
+<section class="stats" id="stats" aria-label="Catalogue summary"></section>
+
+<section class="controls">
+  <input type="search" id="q" placeholder="Filter by name or key…" aria-label="Filter sources">
+  <select id="tier" aria-label="Filter by tier">
+    <option value="">All tiers</option>
+    <option value="1">Tier 1</option>
+    <option value="2">Tier 2</option>
+    <option value="3">Tier 3</option>
+  </select>
+  <select id="status" aria-label="Filter by link status">
+    <option value="">All statuses</option>
+    <option value="direct">Direct link</option>
+    <option value="query">Query / API</option>
+    <option value="credentialed">Needs credentials</option>
+    <option value="retired">Retired</option>
+  </select>
+  <button id="expand" type="button">Expand all</button>
+</section>
+
+<main id="sources" aria-live="polite"></main>
+
+<footer>
+  <p>
+    Data belongs to its original providers — NASA/JPL, IPAC, CDS/VizieR, ESA/Gaia, MPC,
+    CelesTrak, UCS, USGS/IAU and others. Check each source's license before redistributing.
+  </p>
+  <p id="generated"></p>
+</footer>
+
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

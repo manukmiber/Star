@@ -61,9 +61,30 @@ register(SourceSpec(
     "replacement URL found for the classic per-planet comparison table. Physical parameters "
     "for planets are pulled from jpl_horizons's OBJ_DATA instead (already source [A] in the "
     "brief), which covers the same ground (mass, radius, density, gravity, rotation, etc.) "
-    "straight from JPL. This source is excluded from the build; the raw 2026-08-20 response "
-    "is kept as-is (it's the honest evidence of what the endpoint actually returns) but never "
-    "parsed as fact-sheet content.",
+    "straight from JPL, and — added 2026-08-21 — from le_systeme_solaire, which returns the "
+    "same comparison-table quantities for 554 bodies (planets, dwarf planets and moons) in "
+    "one JSON response. Re-verified 2026-08-21: marsfact.html and planet_table_ratio.html "
+    "both return the byte-identical 245 kB nasa.gov landing page, so the redirect is not "
+    "path-specific and there is nothing left to salvage here. This source is excluded from "
+    "the build; the raw 2026-08-20 response is kept as-is (it is the honest evidence of what "
+    "the endpoint actually returns) but never parsed as fact-sheet content.",
+))
+register(SourceSpec(
+    key="le_systeme_solaire",
+    name="Le Systeme Solaire REST API (bulk physical parameters, all bodies)",
+    tier=1,
+    category="solar_system/planets",
+    base_url="https://api.le-systeme-solaire.net/rest/bodies/",
+    probe_url="https://api.le-systeme-solaire.net/rest/bodies/",
+    license="Open data, attribution requested (api.le-systeme-solaire.net)",
+    notes="Replacement for the dead nssdc_planetary_factsheet. One request returns "
+    "554 bodies (8 planets, 4 dwarf planets, 479 moons, 55 asteroids, 7 comets, the "
+    "Sun) with mass, volume, density, gravity, escape velocity, mean/equatorial/polar "
+    "radius, flattening, sidereal orbit and rotation, axial tilt, mean temperature, "
+    "orbital elements and discovery circumstances — i.e. the same ground the fact "
+    "sheets covered, plus moons. Requires an `Authorization: Bearer <key>` header; "
+    "a free key ships as the default in core/config.py "
+    "(ASTRO_DL_SOLARSYSTEM_API_KEY overrides it). Verified 2026-08-21: 200, 497 kB.",
 ))
 register(SourceSpec(
     key="jpl_horizons",
@@ -78,13 +99,17 @@ register(SourceSpec(
 register(SourceSpec(
     key="usgs_gazetteer",
     name="IAU/USGS Gazetteer of Planetary Nomenclature",
-    tier=2,
+    tier=1,
     category="solar_system/planets",
     base_url="https://planetarynames.wr.usgs.gov/",
     probe_url="https://planetarynames.wr.usgs.gov/SearchResults?Target=19_Earth",
     license="Public domain (USGS/IAU)",
-    notes="Not explicitly listed in the brief's Tier 1 list; nomenclature covers tens of "
-    "thousands of surface features, so provisionally Tier 2 pending size confirmation.",
+    notes="Promoted to Tier 1 on 2026-08-21 after the size was actually measured: an "
+    "empty POST to /SearchResults bulk-exports the whole gazetteer in a single HTML "
+    "table — 16,353 approved features across all bodies (~43 MB), not the 'tens of "
+    "thousands, unknown size' the Fase 1 note assumed. The per-body GIS shapefiles at "
+    "/GIS_Downloads are only needed if feature geometry (not centre coordinates) is "
+    "wanted.",
 ))
 
 # ---------------------------------------------------------------------------
@@ -222,13 +247,12 @@ register(SourceSpec(
     base_url="https://github.com/OpenExoplanetCatalogue/open_exoplanet_catalogue",
     probe_url="https://raw.githubusercontent.com/OpenExoplanetCatalogue/open_exoplanet_catalogue/master/README.md",
     license="MIT (per repo)",
-    notes="No single combined data file — one XML per system (thousands of files) under "
-    "systems/. api.github.com and codeload.github.com are blocked for this session (repo "
-    "not in this session's GitHub scope), so directory listing / tarball download aren't "
-    "reachable here; per-file raw.githubusercontent.com fetches would mean thousands of "
-    "requests at the 1 req/s policy. Skipped in this pull; a proper pull needs either a "
-    "`git clone` step outside this session's GitHub-scope restriction, or the repo added "
-    "to session scope via add_repo.",
+    notes="The main repo has one XML per system (thousands of files) and its tarball "
+    "endpoints (api.github.com / codeload.github.com) are blocked here — but the OEC "
+    "project publishes the whole catalogue as a single gzipped XML in its companion "
+    "repo, refreshed on every commit: raw.githubusercontent.com/OpenExoplanetCatalogue/"
+    "oec_gzip/master/systems.xml.gz. Verified 2026-08-21: 200, 1.05 MB. That is what "
+    "the downloader uses, so this source is no longer skipped.",
 ))
 register(SourceSpec(
     key="exoplanet_eu",
@@ -277,7 +301,12 @@ register(SourceSpec(
     "stars/special/ (otypes BD*/N*/BH/sg*, plus MK luminosity class Ia+ for hypergiants) "
     "and four HIP<->{main_id,Gaia DR3,TIC,2MASS,HD} identifier joins over the `ident` "
     "table that feed _catalog/crosswalk.parquet. Each returns 10^2-10^5 rows and runs in "
-    "seconds.",
+    "seconds. Two facts confirmed on 2026-08-21 while wiring links.py: magnitudes live in "
+    "`allfluxes`, not `basic`, so any magnitude cut needs the join (a bare `where V < 10` "
+    "returns HTTP 400 'Unknown column V'); and SIMBAD's TAP silently truncates at "
+    "MAXREC=50000 — a `V < 10` join matches 362,857 rows but returns exactly 50,000 with "
+    "no warning, which is why every TAP target now sends MAXREC explicitly and the "
+    "downloader refuses a result that comes back sitting exactly on the limit."
 ))
 register(SourceSpec(
     key="gaia_dr3_tap",
@@ -291,10 +320,16 @@ register(SourceSpec(
         "&QUERY=select+top+5+source_id,ra,dec+from+gaiadr3.gaia_source"
     ),
     license="ESA/Gaia — attribution required",
-    notes="1.8B rows. Default Tier 3 subset: parallax > 10 mas OR phot_g_mean_mag < 12 "
-    "(see brief section 3). Never pulled without explicit go-ahead. Probe on 2026-08-20 "
-    "got HTTP 503 from the ESA TAP server (likely maintenance/load, not a dead endpoint) "
-    "— re-check before any Tier 3 pull.",
+    notes="1.81e9 rows. Default Tier 3 subset: parallax > 10 mas OR phot_g_mean_mag < 12 "
+    "(see brief section 3) = 3,602,117 rows, counted live on 2026-08-21 rather than "
+    "estimated. The Fase 1 HTTP 503 was a transient ESA-side outage; the server answers "
+    "normally again. The subset is split into 182 `random_index` slices of 10M each. "
+    "Slice width is a correctness constraint, not a speed knob: at 50M wide the sync "
+    "endpoint repeatably returned 90,113 of a matching 99,309 rows with no warning "
+    "anywhere — VOTable QUERY_STATUS still reads OK, because that INFO is written "
+    "before rows stream, and an explicit MAXREC does not change the number. At 5M and "
+    "10M the returned row count equals the catalogue count exactly (spot-checked at "
+    "slices 0, 90 and 181). Never pulled without an explicit --tier 3 instruction.",
 ))
 register(SourceSpec(
     key="vizier_tap",
@@ -308,7 +343,11 @@ register(SourceSpec(
         "&query=select+top+5+*+from+\"B/wds/wds\""
     ),
     license="CDS — attribution required per catalog",
-    notes="Used per-catalog (WDS, MSC, etc.), not a bulk dump.",
+    notes="Used per-catalog (WDS, SB9, MSC), not a bulk dump. Its own downloadable "
+    "artifact is METAcat — VizieR's index of every catalogue it serves — via the ASU "
+    "endpoint. Note TAP_SCHEMA queries against TAPVizieR return HTTP 500 (server-side "
+    "SQL translation bug, re-checked 2026-08-21), so METAcat is the working way to "
+    "enumerate catalogues.",
 ))
 register(SourceSpec(
     key="iau_star_names",
@@ -394,9 +433,9 @@ register(SourceSpec(
         "&QUERY=select+top+5+*+from+gaiadr3.nss_two_body_orbit"
     ),
     license="ESA/Gaia — attribution required",
-    notes="~800k rows; smaller than the full Gaia source catalog but still large, "
-    "provisionally Tier 2 pending size confirmation. Probe on 2026-08-20 got HTTP 503 "
-    "from the ESA TAP server (same as gaia_dr3_tap) — re-check before pulling.",
+    notes="~800k rows; smaller than the full Gaia source catalog but still large, so "
+    "Tier 2. The Fase 1 HTTP 503 was a transient ESA-side outage — re-probed 2026-08-21 "
+    "and the table answers normally.",
 ))
 
 # ---------------------------------------------------------------------------
@@ -443,14 +482,14 @@ register(SourceSpec(
     tier=1,
     category="solar_system/artificial_satellites",
     base_url="https://www.ucs.org/resources/satellite-database",
-    probe_url="https://www.ucs.org/resources/satellite-database",
+    probe_url="https://www.ucs.org/media/11492",
     license="Verify at probe time (UCS terms of use)",
-    requires_credentials=True,
-    notes="ucsusa.org redirects to ucs.org (verified 2026-08-20). The page no longer links "
-    "a direct .xlsx/.csv download — it now routes to an email opt-in form "
-    "(forms.ucs.org/get-satellite-database-updates/). Treated like a credentialed source "
-    "and skipped rather than scraping a page that isn't the actual dataset; a human would "
-    "need to request the file directly from UCS.",
+    notes="ucsusa.org redirects to ucs.org. The landing page only offers an email opt-in "
+    "form, which is why Fase 1 marked this credentialed — but that was wrong: the "
+    "underlying media link https://www.ucs.org/media/11492 is public and "
+    "unauthenticated, redirecting to the current dated .xlsx under /sites/default/files/. "
+    "Verified 2026-08-21: 200, 1.5 MB, spreadsheetml content type. No opt-in needed, so "
+    "requires_credentials is now False and the source is pulled normally.",
 ))
 
 # ---------------------------------------------------------------------------

@@ -13,6 +13,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 # CDS APIs (they ask for a way to reach the requester if something goes wrong).
 DEFAULT_CONTACT_EMAIL = "bgas3453@gmail.com"
 
+# api.le-systeme-solaire.net requires `Authorization: Bearer <key>` on every
+# request. Keys are free and self-service (https://api.le-systeme-solaire.net/
+# generatekey.html) and grant read-only access to public solar-system data, so
+# this one is checked in on purpose to keep the source fetchable out of the box.
+# Override with ASTRO_DL_SOLARSYSTEM_API_KEY to use your own.
+DEFAULT_SOLAR_SYSTEM_API_KEY = "5eddd6b8-587c-4d85-94fd-250c1a750fdc"
+
 
 class Settings(BaseModel):
     project_root: Path = PROJECT_ROOT
@@ -26,6 +33,17 @@ class Settings(BaseModel):
         default_factory=lambda: os.environ.get("ASTRO_DL_CONTACT_EMAIL", DEFAULT_CONTACT_EMAIL)
     )
     user_agent: str = ""
+    solar_system_api_key: str = Field(
+        default_factory=lambda: os.environ.get(
+            "ASTRO_DL_SOLARSYSTEM_API_KEY", DEFAULT_SOLAR_SYSTEM_API_KEY
+        )
+    )
+    spacetrack_user: str | None = Field(
+        default_factory=lambda: os.environ.get("ASTRO_DL_SPACETRACK_USER")
+    )
+    spacetrack_password: str | None = Field(
+        default_factory=lambda: os.environ.get("ASTRO_DL_SPACETRACK_PASS")
+    )
 
     requests_per_second_per_domain: float = 1.0
     max_retries: int = 5

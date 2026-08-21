@@ -1,5 +1,142 @@
 # Changelog
 
+## 2026-08-21 — Fase 8: lengkapi semua link download + frontend Cloudflare
+
+### Link registry (`astro_datalake/sources/links.py`)
+
+Semua URL download sekarang jadi **data**, bukan kode: satu `DownloadTarget`
+per file (URL, method, params, form body, header, timeout, perkiraan ukuran).
+52 sumber, 130 target, dan satu definisi itu dipakai bareng oleh downloader,
+generator manifest, situs statis, dan Worker — jadi link tidak bisa beda-beda
+antar tempat. (Lima sumber Fase 5 — ATNF pulsar, BlackCAT, IAU MDC, Horizons
+elements, SBDB hiperbolik — ikut dipindah ke registry ini waktu merge dengan
+main.)
+
+`downloaders.py` ditulis ulang di atas registry itu. Yang tadinya
+**38 dari 46 sumber** bisa ditarik, sekarang **50 dari 52**.
+
+### Sumber yang tadinya dilewati, sekarang jalan
+
+Semua diverifikasi live 2026-08-21, bukan tebakan:
+
+- **`usgs_gazetteer`** — catatan lama bilang datanya cuma tersedia sebagai
+  ~100 shapefile GIS per-benda. Salah: POST kosong ke `/SearchResults`
+  meng-export **seluruh gazetteer dalam satu tabel HTML** — 16.353 fitur
+  resmi di semua benda (Moon 9.201, Mars 2.096, Venus 2.046, Merkurius 606,
+  Titan 305, ...), 42,6 MB, lengkap dengan diameter, lat-lon pusat/batas,
+  sistem koordinat, tipe fitur, dan tanggal persetujuan. Dinaikkan ke Tier 1.
+- **`open_exoplanet_catalogue`** — repo utamanya satu XML per sistem (ribuan
+  file) dan endpoint tarball GitHub diblokir di environment ini. Tapi proyek
+  OEC sendiri menerbitkan seluruh katalog sebagai satu XML ter-gzip di repo
+  pendamping `oec_gzip` (1,05 MB, di-refresh tiap commit). Beres.
+- **`ucs_satellite_db`** — tadinya ditandai butuh kredensial karena halaman
+  landing-nya cuma menawarkan form opt-in email. Ternyata link media-nya
+  publik tanpa autentikasi: `https://www.ucs.org/media/11492` → .xlsx 1,5 MB.
+  `requires_credentials` dicabut.
+- **`simbad_tap`** — sebelumnya tidak ditarik sama sekali (`basic` >15 juta
+  baris). Sekarang dua query ADQL terbatas: `basic` di-join ke `allfluxes`
+  untuk V < 10, plus cross-identifier `ident` untuk subset yang sama.
+  Catatan: magnitudo ada di `allfluxes`, bukan `basic` — `where V < 10` polos
+  balas HTTP 400 "Unknown column V".
+- **`gaia_dr3_tap` / `gaia_dr3_nss`** — HTTP 503 waktu Fase 1 ternyata outage
+  sementara di sisi ESA; server jawab normal lagi. Subset default Tier 3
+  (parallax > 10 mas ATAU G < 12) **dihitung live: 3.602.117 baris**, bukan
+  diperkirakan. Dipecah jadi 37 potongan `random_index` biar tiap potongan
+  muat di endpoint sync (satu potongan 50 juta lebar ≈ 90 ribu baris, ~70 s).
+- **`vizier_tap`** — dulu cuma "titik akses, bukan dataset". Sekarang punya
+  artefak sendiri: METAcat, indeks semua katalog yang dilayani VizieR, lewat
+  endpoint ASU (4,65 MB). Catatan: query `TAP_SCHEMA` di TAPVizieR balas
+  HTTP 500 (bug translasi SQL di server), jadi ASU yang dipakai.
+- **`spacetrack`** — sekarang punya downloader beneran (POST login →
+  cookie sesi → GET query gp/satcat/decay), bukan cuma "skip". Tetap
+  dilewati kalau `ASTRO_DL_SPACETRACK_USER`/`PASS` tidak diset.
+
+### Hasil TAP yang dipotong diam-diam sekarang ditolak
+
+Ditemukan waktu merge dengan main, dan ini bug beneran di kerjaan sebelumnya:
+server TAP memotong hasil di MAXREC default mereka sendiri lalu mengembalikan
+CSV yang bentuknya sempurna, **tanpa peringatan apa pun**. Query SIMBAD
+`V < 10` yang benar-benar cocok dengan **362.857 baris** balik cuma
+**50.000 baris** — dan lolos verifikasi link karena responsnya HTTP 200 dengan
+konten yang kelihatan valid.
+
+Kasus kedua ditemukan di Gaia dan bentuknya beda: potongan `random_index`
+selebar 50 juta cocok dengan 99.309 baris tapi endpoint sync-nya cuma
+mengembalikan **90.113**, berulang kali, tanpa peringatan — header VOTable
+tetap `QUERY_STATUS="OK"` karena INFO itu ditulis sebelum baris mengalir, dan
+`MAXREC` eksplisit tidak mengubah angkanya. Jadi ini pemotongan pada hasil
+besar, bukan batas baris. Di lebar 5 juta dan 10 juta, jumlah baris yang
+kembali **persis sama** dengan jumlah di katalog. Lebar potongan diturunkan
+dari 50 juta ke 10 juta (37 → 182 potongan, ~20 ribu baris / ~3 MB per
+potongan) dan dicek ulang di potongan 0, 90, dan 181: semuanya cocok persis.
+Lebar potongan sekarang urusan kebenaran data, bukan kecepatan.
+
+Sekarang setiap target TAP mengirim `MAXREC` secara eksplisit, dan
+`downloaders._reject_truncated()` menolak hasil yang jumlah barisnya persis
+menyentuh limit. Lebih baik gagal keras daripada meng-cache setengah katalog
+yang kelihatan utuh. Pendekatan ini diambil dari `tap_queries()` milik Fase 5
+di main dan diterapkan ke semua target TAP.
+
+### `nssdc_planetary_factsheet` diganti, bukan ditambal
+
+Dicek ulang 2026-08-21: `marsfact.html` dan `planet_table_ratio.html`
+dua-duanya balas halaman landing nasa.gov 245 kB yang byte-nya identik —
+redirect-nya bukan per-path, memang tidak ada yang tersisa. Ditandai
+`retired` dengan `replaced_by` yang eksplisit.
+
+Penggantinya, sumber baru **`le_systeme_solaire`**: satu request → 554 benda
+(8 planet, 4 planet katai, 479 bulan, 55 asteroid, 7 komet, Matahari) dengan
+massa, volume, densitas, gravitasi, kecepatan lepas, radius rata-rata/
+ekuator/kutub, flattening, periode orbit & rotasi sidereal, kemiringan
+sumbu, suhu rata-rata, elemen orbit, dan data penemuan. Butuh header
+`Authorization: Bearer <key>`; key gratis ditaruh sebagai default di
+`core/config.py` (override lewat `ASTRO_DL_SOLARSYSTEM_API_KEY`) supaya
+sumbernya langsung jalan tanpa setup.
+
+Nilai key tidak pernah bocor ke artefak publik: manifest hanya menerbitkan
+*nama* header, dan cuplikan curl di situs menampilkan
+`$ASTRO_DL_SOLARSYSTEM_API_KEY`. Ada test yang menjaga itu.
+
+### Frontend Cloudflare — memperbaiki build yang gagal
+
+Build gagal dengan:
+
+```
+✘ [ERROR] Could not detect a directory containing static files
+          (e.g. html, css and js) for the project
+```
+
+Penyebabnya: repo ini proyek Python tanpa config wrangler sama sekali, jadi
+`npx wrangler deploy` tidak punya entrypoint maupun direktori aset untuk
+ditebak. Ditambahkan:
+
+- **`wrangler.toml`** — `main` + `[assets]` (layout Workers Static Assets),
+  jadi `npx wrangler deploy` jalan tanpa mengubah deploy command.
+- **`worker/index.js`** — API JSON kecil di atas manifest. Worker sengaja
+  **tidak pernah** mengalirkan dataset lewat dirinya sendiri: file di sini
+  ukurannya 70 kB sampai ~200 MB, jadi `/api/download/<key>` cuma `302` ke
+  host asalnya. Byte-nya jalan sumber → klien, dan download 200 MB cuma
+  memakan satu penulisan header di Worker.
+- **`public/`** — indeks download statis yang di-render dari `manifest.json`:
+  filter per tier/status/kata kunci, tiap file dengan URL, method, ukuran.
+  Target yang butuh POST body atau header auth ditampilkan sebagai perintah
+  curl, bukan link yang pasti gagal.
+- **`astro manifest`** — menulis `public/manifest.json` dari `links.py`.
+  Filenya di-commit karena build Cloudflare cuma menjalankan `uv sync` dan
+  `npx wrangler deploy` (tidak ada langkah generate di CI); `--check` dan
+  satu test gagal kalau salinannya sudah basi.
+
+Diverifikasi lokal: `wrangler deploy --dry-run` membaca direktori aset dan
+lolos, `wrangler dev` melayani semua rute, dan halaman di-render headless
+tanpa error JS.
+
+### Tes
+
+`tests/test_links.py` — kelengkapan registry, bentuk URL (https, host, nama
+file aman, tidak ada duplikat), potongan Gaia harus bersambung tanpa celah
+atau tumpang tindih, setiap sumber yang dilewati wajib punya alasan, dan
+nilai header rahasia tidak boleh muncul di output terbitan.
+
 ## 2026-08-20 — Fase 5: Menutup gap yang tercatat di REPORT.md §5
 
 Fokusnya satu: bagian yang Fase 3-4 tinggalkan sebagai "belum dibangun".

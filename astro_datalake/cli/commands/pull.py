@@ -19,7 +19,7 @@ from rich.table import Table
 from ...core.cache import is_cached, write_raw
 from ...core.config import settings
 from ...core.http import make_client
-from ...downloaders import DOWNLOAD_PLAN
+from ...downloaders import DOWNLOAD_PLAN, unfetchable_reason
 from ...sources.registry import SOURCES
 
 console = Console()
@@ -28,7 +28,8 @@ console = Console()
 async def _pull_one(client, key: str) -> dict:
     fetcher = DOWNLOAD_PLAN.get(key)
     if fetcher is None:
-        return {"key": key, "status": "skipped", "detail": "belum ada download plan (lihat notes di registry.py)"}
+        reason = unfetchable_reason(key) or "tidak ada download target"
+        return {"key": key, "status": "skipped", "detail": reason}
 
     try:
         files = await fetcher(client)
