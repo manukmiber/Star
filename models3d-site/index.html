@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Star 3D Models — Download Model 3D Satelit, Komet, Asteroid &amp; Bintang</title>
+<meta name="description" content="Unduh model 3D resmi satelit buatan manusia, komet, asteroid, dan Matahari dari NASA, ESA, dan JAXA — langsung ke perangkat Anda.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛰️</text></svg>">
+<script type="module" src="https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js"></script>
+<style>
+  :root{
+    --bg:#05070f;
+    --bg-panel:#0d1224;
+    --bg-card:#111834;
+    --border:#22294a;
+    --text:#e7ebff;
+    --text-dim:#9aa3c7;
+    --accent:#6ea8fe;
+    --accent-2:#7ef7d0;
+    --warn:#ffcf7e;
+    --radius:14px;
+    --maxw:1200px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% -10%, #1a2350 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 10%, #24123f 0%, transparent 45%),
+      var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+    line-height:1.5;
+  }
+  .stars{
+    position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, #fff, transparent),
+      radial-gradient(1px 1px at 80% 60%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 50% 80%, #fff, transparent),
+      radial-gradient(1px 1px at 30% 90%, #fff, transparent),
+      radial-gradient(1px 1px at 65% 15%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 90% 85%, #fff, transparent),
+      radial-gradient(1px 1px at 15% 55%, #fff, transparent);
+    background-size:600px 600px;
+    opacity:.35;
+  }
+  header{
+    max-width:var(--maxw); margin:0 auto; padding:48px 20px 12px;
+  }
+  header h1{
+    font-size:clamp(1.6rem,3vw,2.4rem);
+    margin:0 0 8px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  header p{color:var(--text-dim); max-width:70ch; margin:0 0 4px;}
+  header .src-note{font-size:.85rem; color:var(--text-dim); margin-top:14px;}
+  header .src-note a{color:var(--accent);}
+
+  .toolbar{
+    max-width:var(--maxw); margin:20px auto 0; padding:0 20px;
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  }
+  .tab{
+    background:var(--bg-panel); border:1px solid var(--border); color:var(--text-dim);
+    padding:8px 16px; border-radius:999px; cursor:pointer; font-size:.9rem;
+    transition:.15s;
+  }
+  .tab:hover{color:var(--text); border-color:var(--accent);}
+  .tab.active{background:var(--accent); color:#04070f; border-color:var(--accent); font-weight:600;}
+  .search{
+    margin-left:auto;
+    background:var(--bg-panel); border:1px solid var(--border); color:var(--text);
+    padding:8px 14px; border-radius:999px; min-width:220px; font-size:.9rem;
+  }
+  .search:focus{outline:none; border-color:var(--accent);}
+
+  main{max-width:var(--maxw); margin:0 auto; padding:28px 20px 80px;}
+  .category-heading{
+    margin:36px 0 16px; font-size:1.15rem; color:var(--accent-2);
+    display:flex; align-items:baseline; gap:10px;
+  }
+  .category-heading small{color:var(--text-dim); font-weight:400; font-size:.8rem;}
+
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px;
+  }
+  .card{
+    background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px; display:flex; flex-direction:column; gap:10px;
+  }
+  .card h3{margin:0; font-size:1.05rem;}
+  .card .agency{
+    display:inline-block; align-self:flex-start;
+    font-size:.7rem; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--accent); border:1px solid var(--accent); border-radius:6px; padding:2px 8px;
+  }
+  .card p.summary{color:var(--text-dim); font-size:.88rem; margin:0;}
+  .card p.notes{color:var(--warn); font-size:.78rem; margin:0;}
+  model-viewer.preview{
+    width:100%; height:180px; border-radius:10px; background:#060814;
+    --poster-color:transparent;
+  }
+  .files{display:flex; flex-wrap:wrap; gap:8px; margin-top:auto;}
+  .file-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background:#182047; border:1px solid var(--border); color:var(--text);
+    padding:7px 12px; border-radius:8px; text-decoration:none; font-size:.82rem;
+    transition:.15s;
+  }
+  .file-btn:hover{background:var(--accent); color:#04070f; border-color:var(--accent);}
+  .file-btn .fmt{font-weight:700; text-transform:uppercase;}
+  .file-btn .size{color:inherit; opacity:.7; font-size:.75rem;}
+  .card-footer{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:.75rem; color:var(--text-dim); margin-top:4px;
+  }
+  .card-footer a{color:var(--text-dim);}
+
+  .more-box{
+    margin-top:50px; padding:20px; background:var(--bg-panel); border:1px dashed var(--border);
+    border-radius:var(--radius); font-size:.9rem; color:var(--text-dim);
+  }
+  .more-box a{color:var(--accent);}
+  .more-box ul{margin:8px 0 0; padding-left:20px;}
+
+  footer{
+    max-width:var(--maxw); margin:0 auto; padding:20px 20px 60px; color:var(--text-dim); font-size:.8rem;
+  }
+  footer a{color:var(--accent);}
+
+  #empty{display:none; color:var(--text-dim); padding:40px 0; text-align:center;}
+</style>
+</head>
+<body>
+<div class="stars"></div>
+
+<header>
+  <h1>🛰️ Star 3D Models</h1>
+  <p>Model 3D resmi untuk satelit buatan manusia, komet, asteroid, dan Matahari — dikumpulkan dari sumber resmi NASA, ESA, dan JAXA. Klik tombol format untuk mengunduh langsung ke perangkat Anda.</p>
+  <p class="src-note">Semua link mengarah langsung ke server resmi badan antariksa (bukan file yang di-hosting ulang di sini) — lihat "sumber" pada tiap kartu untuk halaman aslinya dan ketentuan atribusi/lisensi.</p>
+</header>
+
+<div class="toolbar" id="toolbar">
+  <button class="tab active" data-filter="all">Semua</button>
+  <input class="search" id="search" type="search" placeholder="Cari nama model…">
+</div>
+
+<main>
+  <div id="content"></div>
+  <div id="empty">Tidak ada model yang cocok.</div>
+
+  <div class="more-box" id="more-box"></div>
+</main>
+
+<footer>
+  Dibangun untuk deploy statis di Cloudflare Pages — tidak perlu backend/build step.
+  Data model: <code>catalog.json</code>. Kredit tetap milik NASA / ESA / JAXA masing-masing misi.
+</footer>
+
+<script>
+async function main(){
+  const res = await fetch('catalog.json');
+  const data = await res.json();
+
+  const catMeta = Object.fromEntries(data.categories.map(c => [c.id, c]));
+  const content = document.getElementById('content');
+  const toolbar = document.getElementById('toolbar');
+  const searchInput = document.getElementById('search');
+  const emptyEl = document.getElementById('empty');
+  const moreBox = document.getElementById('more-box');
+
+  // toolbar category tabs
+  data.categories.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.dataset.filter = c.id;
+    btn.textContent = c.label_id;
+    toolbar.insertBefore(btn, searchInput);
+  });
+
+  let activeFilter = 'all';
+
+  function fileButton(item, f){
+    const a = document.createElement('a');
+    a.className = 'file-btn';
+    a.href = f.url;
+    a.setAttribute('download', '');
+    a.target = '_blank';
+    a.rel = 'noopener';
+    const sizeTxt = f.size_mb ? ` <span class="size">${f.size_mb} MB</span>` : '';
+    const labelTxt = f.label ? ` <span class="size">(${f.label})</span>` : '';
+    a.innerHTML = `<span class="fmt">${f.format}</span>${sizeTxt}${labelTxt}`;
+    return a;
+  }
+
+  function renderCard(item){
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.name = item.name.toLowerCase();
+    card.dataset.category = item.category;
+
+    const agency = document.createElement('span');
+    agency.className = 'agency';
+    agency.textContent = item.agency;
+    card.appendChild(agency);
+
+    const h3 = document.createElement('h3');
+    h3.textContent = item.name;
+    card.appendChild(h3);
+
+    if (item.summary_id){
+      const p = document.createElement('p');
+      p.className = 'summary';
+      p.textContent = item.summary_id;
+      card.appendChild(p);
+    }
+
+    const glb = (item.files || []).find(f => f.format === 'glb');
+    if (glb){
+      const mv = document.createElement('model-viewer');
+      mv.className = 'preview';
+      mv.setAttribute('src', glb.url);
+      mv.setAttribute('camera-controls', '');
+      mv.setAttribute('auto-rotate', '');
+      mv.setAttribute('exposure', '1');
+      mv.setAttribute('shadow-intensity', '0.6');
+      mv.setAttribute('loading', 'lazy');
+      card.appendChild(mv);
+    }
+
+    if (item.notes_id){
+      const n = document.createElement('p');
+      n.className = 'notes';
+      n.textContent = '⚠ ' + item.notes_id;
+      card.appendChild(n);
+    }
+
+    const files = document.createElement('div');
+    files.className = 'files';
+    (item.files || []).forEach(f => files.appendChild(fileButton(item, f)));
+    card.appendChild(files);
+
+    const footer = document.createElement('div');
+    footer.className = 'card-footer';
+    footer.innerHTML = `<span>${item.license || ''}</span>`;
+    if (item.source_page){
+      const a = document.createElement('a');
+      a.href = item.source_page; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = 'sumber →';
+      footer.appendChild(a);
+    }
+    card.appendChild(footer);
+
+    return card;
+  }
+
+  function render(){
+    content.innerHTML = '';
+    const q = searchInput.value.trim().toLowerCase();
+
+    const grouped = {};
+    data.items.forEach(item => {
+      if (activeFilter !== 'all' && item.category !== activeFilter) return;
+      if (q && !item.name.toLowerCase().includes(q)) return;
+      (grouped[item.category] ||= []).push(item);
+    });
+
+    let any = false;
+    data.categories.forEach(c => {
+      const items = grouped[c.id];
+      if (!items || !items.length) return;
+      any = true;
+      const heading = document.createElement('div');
+      heading.className = 'category-heading';
+      heading.innerHTML = `${c.label_id} <small>${items.length} model</small>`;
+      content.appendChild(heading);
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      items.forEach(item => grid.appendChild(renderCard(item)));
+      content.appendChild(grid);
+    });
+
+    emptyEl.style.display = any ? 'none' : 'block';
+  }
+
+  toolbar.addEventListener('click', e => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    toolbar.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    render();
+  });
+  searchInput.addEventListener('input', render);
+
+  if (data.more_links && data.more_links.length){
+    moreBox.innerHTML = '<strong>Ingin lebih banyak?</strong><ul>' +
+      data.more_links.map(l => `<li><a href="${l.url}" target="_blank" rel="noopener">${l.label_id}</a></li>`).join('') +
+      '</ul>';
+  }
+
+  render();
+}
+main().catch(err => {
+  document.getElementById('content').innerHTML =
+    '<p style="color:#ff8a8a">Gagal memuat catalog.json: ' + err.message + '</p>';
+});
+</script>
+</body>
+</html>

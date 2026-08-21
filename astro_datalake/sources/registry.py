@@ -295,12 +295,18 @@ register(SourceSpec(
         "&query=select+top+5+main_id,ra,dec+from+basic"
     ),
     license="CDS — attribution required",
-    notes="`basic` alone is >15M rows, so there is deliberately no full dump. Instead "
-    "two bounded ADQL queries are pulled: basic joined to allfluxes for V < 10 "
-    "(parameters) and the matching `ident` rows (cross-identifiers). Magnitudes live in "
-    "`allfluxes`, not `basic` — the join is mandatory, a bare `where V < 10` returns "
-    "HTTP 400 'Unknown column V' (verified 2026-08-21). V < 10 is the population that "
-    "actually overlaps HYG and the exoplanet hosts.",
+    notes="Used for targeted cross-match queries, not a full dump. `basic` alone is >15M "
+    "rows with unbounded scope, so it is never bulk-dumped. Fase 5 pulls seven bounded "
+    "ADQL queries instead (verified live 2026-08-20): five object-type slices that feed "
+    "stars/special/ (otypes BD*/N*/BH/sg*, plus MK luminosity class Ia+ for hypergiants) "
+    "and four HIP<->{main_id,Gaia DR3,TIC,2MASS,HD} identifier joins over the `ident` "
+    "table that feed _catalog/crosswalk.parquet. Each returns 10^2-10^5 rows and runs in "
+    "seconds. Two facts confirmed on 2026-08-21 while wiring links.py: magnitudes live in "
+    "`allfluxes`, not `basic`, so any magnitude cut needs the join (a bare `where V < 10` "
+    "returns HTTP 400 'Unknown column V'); and SIMBAD's TAP silently truncates at "
+    "MAXREC=50000 — a `V < 10` join matches 362,857 rows but returns exactly 50,000 with "
+    "no warning, which is why every TAP target now sends MAXREC explicitly and the "
+    "downloader refuses a result that comes back sitting exactly on the limit."
 ))
 register(SourceSpec(
     key="gaia_dr3_tap",
@@ -317,9 +323,13 @@ register(SourceSpec(
     notes="1.81e9 rows. Default Tier 3 subset: parallax > 10 mas OR phot_g_mean_mag < 12 "
     "(see brief section 3) = 3,602,117 rows, counted live on 2026-08-21 rather than "
     "estimated. The Fase 1 HTTP 503 was a transient ESA-side outage; the server answers "
-    "normally again. The subset is split into 37 `random_index` slices so each fits the "
-    "sync endpoint (a 50M-wide slice measured ~90k rows in ~70 s). Never pulled without "
-    "an explicit --tier 3 instruction.",
+    "normally again. The subset is split into 182 `random_index` slices of 10M each. "
+    "Slice width is a correctness constraint, not a speed knob: at 50M wide the sync "
+    "endpoint repeatably returned 90,113 of a matching 99,309 rows with no warning "
+    "anywhere — VOTable QUERY_STATUS still reads OK, because that INFO is written "
+    "before rows stream, and an explicit MAXREC does not change the number. At 5M and "
+    "10M the returned row count equals the catalogue count exactly (spot-checked at "
+    "slices 0, 90 and 181). Never pulled without an explicit --tier 3 instruction.",
 ))
 register(SourceSpec(
     key="vizier_tap",
@@ -506,6 +516,102 @@ register(SourceSpec(
     probe_url="https://raw.githubusercontent.com/mattiaverga/OpenNGC/master/database_files/NGC.csv",
     license="CC BY-SA 4.0 (per repo)",
     notes="Messier objects are a subset of OpenNGC (M column); same Tier-3-by-brief caveat as above.",
+))
+
+
+# ---------------------------------------------------------------------------
+# [I] Fase 5 — sumber tambahan untuk menutup gap yang tercatat di REPORT.md §5
+# ---------------------------------------------------------------------------
+register(SourceSpec(
+    key="atnf_pulsar_catalog",
+    name="ATNF Pulsar Catalogue (via VizieR B/psr)",
+    tier=1,
+    category="stars/special",
+    base_url="https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync",
+    probe_url=(
+        "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync"
+        "?request=doQuery&lang=adql&format=csv"
+        "&query=select+top+5+*+from+\"B/psr/psr\""
+    ),
+    license="CDS — attribution required (Manchester et al. 2005, AJ 129, 1993)",
+    notes="Fills stars/special/{pulsars,magnetars}, which HYG alone could not support "
+    "(see REPORT.md §5). The catalogue's own `Type` column carries AXP for the "
+    "anomalous X-ray pulsars / magnetars — that is the flag used, not a guess. "
+    "CAVEAT: VizieR's copy is a frozen snapshot of 2536 pulsars (confirmed by "
+    "`select count(*)` on 2026-08-20 — it is the whole table, not a truncated query), "
+    "while the live ATNF catalogue at atnf.csiro.au is past 3500. Pulled from VizieR "
+    "anyway because it is the only bulk endpoint with stable ADQL access; the live "
+    "catalogue's own interface is an HTML form. Re-check the row count when a newer "
+    "VizieR version lands.",
+))
+register(SourceSpec(
+    key="blackcat_bh_transients",
+    name="BlackCAT: stellar-mass black holes in X-ray transients (VizieR J/A+A/587/A61)",
+    tier=1,
+    category="stars/special",
+    base_url="https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync",
+    probe_url=(
+        "https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync"
+        "?request=doQuery&lang=adql&format=csv"
+        "&query=select+top+5+*+from+\"J/A%2BA/587/A61/tablea1\""
+    ),
+    license="CDS — attribution required (Corral-Santana et al. 2016, A&A 587, A61)",
+    notes="Table name is J/A+A/587/A61/tablea1 (verified 2026-08-20; there is no "
+    "'blackcat' table). Feeds stars/special/black_holes/ alongside the SIMBAD otype=BH "
+    "slice: SIMBAD lists only the handful of objects typed BH outright, BlackCAT lists "
+    "the X-ray transient census with orbital data.",
+))
+register(SourceSpec(
+    key="iau_meteor_data_center",
+    name="IAU Meteor Data Center — shower list",
+    tier=1,
+    category="solar_system/small_bodies/meteor_showers",
+    base_url="https://www.ta3.sk/IAUC22DB/MDC2022/",
+    probe_url="https://www.ta3.sk/IAUC22DB/MDC2022/Etc/streamestablisheddata2026.txt",
+    license="IAU MDC — cite Jopek & Jenniskens; see file header",
+    notes="The official IAU shower nomenclature database. Fixed-width-ish pipe-delimited "
+    "text with a 98-line self-describing header. Two files pulled: the established-shower "
+    "list (IAU-accepted showers) and the full list (established + working list). Filenames "
+    "carry the year of the edition (…2026.txt, verified 2026-08-20 from the MDC download "
+    "links) — re-check the link list when the edition rolls over.",
+))
+register(SourceSpec(
+    key="jpl_horizons_elements",
+    name="JPL Horizons — heliocentric osculating elements of the giant planets",
+    tier=1,
+    category="solar_system/planets",
+    base_url="https://ssd.jpl.nasa.gov/api/horizons.api",
+    probe_url=(
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND='5'&OBJ_DATA='NO'"
+        "&MAKE_EPHEM='YES'&EPHEM_TYPE='ELEMENTS'&CENTER='500@10'&TLIST=2461200.5"
+    ),
+    license="Public domain (NASA/JPL)",
+    notes="Jupiter's and Neptune's elements at JD 2461200.5 — the epoch most SBDB orbit "
+    "solutions use. Two derived splits need them and nothing else does: the Jupiter-trojan "
+    "L4/L5 camp (Jupiter's mean longitude at the asteroid's epoch) and the location of "
+    "Neptune's mean-motion resonances (from Neptune's semi-major axis) for the TNO "
+    "sub-classes. Separate from the `jpl_horizons` key so the OBJ_DATA physical-parameter "
+    "pull keeps its own raw folder.",
+))
+register(SourceSpec(
+    key="sbdb_query_hyperbolic",
+    name="JPL SBDB — hyperbolic and parabolic orbits (interstellar candidates)",
+    tier=1,
+    category="solar_system/small_bodies/comets",
+    base_url="https://ssd-api.jpl.nasa.gov/sbdb_query.api",
+    probe_url="https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,e,class&sb-class=HYP&limit=5",
+    license="Public domain (NASA/JPL)",
+    notes="SBDB orbit classes HYP (hyperbolic comet), PAR (parabolic comet) and HYA "
+    "(hyperbolic asteroid), all skipped by the Fase 2 pull — they are what "
+    "comets/interstellar/ needs. Two things learned while wiring this up (2026-08-20): "
+    "(1) a hyperbolic osculating orbit does NOT make an object interstellar — Oort-cloud "
+    "comets are routinely perturbed past e=1, and 515 of the 520 HYP comets sit below "
+    "e=1.01; (2) SBDB does not use the IAU 'I' designations in `full_name` at all — "
+    "1I/'Oumuamua is filed as \"'Oumuamua (A/2017 U1)\" under class HYA, 2I/Borisov as "
+    "\"C/2019 Q4 (Borisov)\" and 3I/ATLAS as \"C/2025 N1 (ATLAS)\", both HYP. The builder "
+    "therefore matches on primary designation against an explicit three-entry table of "
+    "IAU interstellar designations, and keeps the merely-hyperbolic objects in a separate "
+    "file instead of mislabelling them.",
 ))
 
 

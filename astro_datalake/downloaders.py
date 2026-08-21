@@ -30,6 +30,10 @@ from .sources.links import (
     SourceLinks,
 )
 
+
+class TruncatedResultError(RuntimeError):
+    """A TAP result came back sitting exactly on its row limit."""
+
 Fetcher = Callable[[httpx.AsyncClient], Awaitable[list[tuple[str, bytes]]]]
 
 
@@ -54,7 +58,30 @@ async def fetch_target(
         if target.params:
             kwargs["params"] = dict(target.params)
         response = await get(client, target.url, **kwargs)
-    return target.filename, response.content
+    content = response.content
+    _reject_truncated(target, content)
+    return target.filename, content
+
+
+def _reject_truncated(target: DownloadTarget, content: bytes) -> None:
+    """Refuse a TAP result that is sitting exactly on MAXREC.
+
+    TAP servers silently clip at their own default and hand back a perfectly
+    well-formed CSV — SIMBAD's default is 50000 rows, and a `V < 10` join that
+    genuinely matches 362,857 rows returns exactly 50,000 of them with no
+    warning anywhere in the response. Caching that would ship a half catalogue
+    that looks complete, so every TAP target sends MAXREC explicitly and a
+    result that lands on the limit is an error, not data.
+    """
+    if target.maxrec is None:
+        return
+    rows = max(content.count(b"\n") - 1, 0)  # minus the CSV header
+    if rows >= target.maxrec:
+        raise TruncatedResultError(
+            f"{target.filename}: {rows} rows == MAXREC ({target.maxrec}); the result was "
+            "clipped. Raise maxrec on this target or split the query — do not cache a "
+            "partial catalogue."
+        )
 
 
 def _plain_fetcher(links: SourceLinks) -> Fetcher:

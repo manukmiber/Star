@@ -8,6 +8,15 @@ structure under `data/`.
 
 - Never fabricate scientific data. A missing field is `null`, and every
   value traces back to a source (`metadata.json` in each leaf folder).
+- Anything computed rather than copied says so. Derived folders (exoplanet
+  `by_type/`, `habitable_zone/`, TNO sub-classes, trojan L4/L5 camps, named
+  binaries) record `derived_from` and `classification_method` in their
+  `metadata.json`, and `astro verify` fails a build where a derived folder
+  does not. Where a published formula has a stated validity range, going
+  outside it returns "not assessed", never an extrapolation.
+- Attribution travels with the data. `astro build` stamps the licence line
+  of each folder's source into that folder's `README.md`, so a folder stays
+  attributed when it is copied out of the tree.
 - Every raw download is cached by checksum and never overwritten; raw
   responses live untouched under `data/raw/<source>/<date>/`.
 - Requests are rate-limited (default 1 req/s per domain) with exponential
@@ -52,7 +61,7 @@ itself:
 - `astro manifest` renders `public/manifest.json`,
 - the static site and the Worker read that manifest.
 
-45 of the 47 sources are fetchable with no setup. The two that are not:
+50 of the 52 sources are fetchable with no setup. The two that are not:
 `nssdc_planetary_factsheet` (retired — NASA now 307-redirects the whole
 fact-sheet path to a generic landing page; `le_systeme_solaire` and
 `jpl_horizons` cover the same parameters) and `spacetrack` (free account
@@ -129,10 +138,18 @@ data/
 ├── raw/            # untouched raw responses, per source per date (gitignored)
 ├── solar_system/   # sun, planets, dwarf planets, small bodies, artificial satellites
 ├── stars/          # by_name, by_constellation, by_spectral_type, by_distance, special
-├── multiple_systems/
-├── exoplanets/      # by_host_star, by_detection_method, by_type, by_mission, ...
-└── deep_sky/        # messier, ngc, ic, nebulae, galaxies (tier 3)
+├── multiple_systems/   # binary/<named system>, triple, quadruple, star_clusters,
+│                       # _catalogs/ (raw WDS/SB9/MSC dumps)
+├── exoplanets/         # by_host_star, by_type, habitable_zone,
+│                       # by_detection_method, candidates
+└── deep_sky/           # messier, ngc, ic, nebulae, galaxies (tier 3)
 ```
+
+Two structural notes: `solar_system/small_bodies/` also carries
+`trojans/{l4,l5}`, `trans_neptunian/{classical,resonant,scattered,detached}`,
+`comets/interstellar/` and `meteor_showers/`; `stars/special/` carries
+pulsars, magnetars, neutron stars, black holes, brown dwarfs, supergiants,
+hypergiants, variables and white dwarfs.
 
 `data/` (except `data/_catalog/schema/`) is gitignored — it's generated
 output, regenerated with `astro pull` + `astro build`, not versioned.
@@ -152,9 +169,28 @@ output, regenerated with `astro pull` + `astro build`, not versioned.
 See `astro_datalake/sources/registry.py` for the exact source -> tier
 mapping and `CHANGELOG.md` for endpoint verification results.
 
+## Derived categories
+
+Some folders group objects by a property no catalogue publishes as a column
+— an exoplanet's "type", whether it is in the habitable zone, which
+Lagrange camp a Jupiter trojan sits in. Those rules live in one place,
+`astro_datalake/build/classify.py`, with the thresholds as named constants
+and the papers they come from in the docstring. Two things follow from that:
+
+- The rules are testable, and tested against objects whose classification
+  is not in dispute — Jupiter is a cold gas giant, Earth is in the
+  conservative habitable zone, Pluto is a plutino, Achilles is L4,
+  Patroclus is L5.
+- Where a rule is genuinely approximate it says so everywhere it lands.
+  The trans-Neptunian sub-classes are (a, q, e, i) cuts, not the numerical
+  integration real resonance membership needs, and every metadata.json in
+  that tree carries that caveat.
+
 ## Status
 
-Project is being built phase by phase (see CHANGELOG.md). Fase 0–4 (scaffold,
-probe, pull, build, verify) are done — see `REPORT.md`. The current change
-completes the download-link registry for all 47 sources and adds the
-Cloudflare frontend.
+Project is built phase by phase (see CHANGELOG.md). Fase 5 closed the gaps
+REPORT.md §5 listed as unbuilt — everything there is built except
+asteroid-family membership, which still needs a proper-elements catalogue.
+Fase 8 completed the download-link registry for all 52 sources and added the
+Cloudflare frontend. See `REPORT.md` for object counts, sizes, sources and
+what remains open.

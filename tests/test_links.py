@@ -86,6 +86,28 @@ def test_gaia_tier3_chunks_tile_the_random_index_range() -> None:
     assert all(upper - lower == GAIA_CHUNK_WIDTH for lower, upper in bounds)
 
 
+def test_gaia_chunk_width_stays_inside_the_verified_range() -> None:
+    """Width is a correctness constraint, not a tuning knob.
+
+    Measured against the live endpoint on 2026-08-21: a 50M-wide slice returns
+    90,113 of a matching 99,309 rows with no warning, while 5M and 10M return
+    their exact counts. Widening this again silently drops rows.
+    """
+    from astro_datalake.sources.links import GAIA_CHUNK_WIDTH
+
+    assert GAIA_CHUNK_WIDTH <= 10_000_000
+
+
+def test_every_tap_target_declares_maxrec() -> None:
+    """A TAP target with no maxrec cannot be checked for silent truncation."""
+    tap_hosts = ("simbad", "tapvizier", "gea.esac", "exoplanetarchive")
+    for key, links in LINKS.items():
+        for target in links.targets:
+            if any(host in target.url for host in tap_hosts):
+                assert target.maxrec, f"{key}/{target.filename} sends no MAXREC"
+                assert "MAXREC" in {k.upper() for k in target.params}
+
+
 def test_download_plan_covers_every_fetchable_source() -> None:
     for key, links in LINKS.items():
         planned = DOWNLOAD_PLAN.get(key) is not None

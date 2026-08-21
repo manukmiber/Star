@@ -52,6 +52,10 @@ class DownloadTarget:
     media_type: str = "application/octet-stream"
     approx_bytes: int | None = None
     note: str = ""
+    # Row cap sent to a TAP server. Set on every TAP target: servers clip at
+    # their own default and return a well-formed CSV with no warning, so the
+    # downloader needs a number to compare the row count against.
+    maxrec: int | None = None
     # Shown in place of a secret header value in published output (manifest,
     # website, curl snippets). Never the value itself.
     secret_placeholder: str = "$ASTRO_DL_TOKEN"
@@ -137,9 +141,25 @@ GAIA_SUBSET_COLUMNS = (
 GAIA_SUBSET_WHERE = "(parallax > 10 or phot_g_mean_mag < 12)"
 # gaia_source has ~1.81e9 rows; `random_index` is a uniformly shuffled 0..N-1
 # column, which makes it the cheapest way to slice the table into sync-sized
-# chunks. 50M-wide slices returned ~90k subset rows in ~70s when measured.
-GAIA_CHUNK_WIDTH = 50_000_000
+# chunks.
+#
+# Width matters for correctness, not just speed. Measured 2026-08-21: a 50M-wide
+# slice matches 99,309 subset rows but the sync endpoint returns only 90,113 of
+# them — repeatably, with no warning. The VOTable header still says
+# QUERY_STATUS="OK" because that INFO is written before rows stream, and setting
+# MAXREC explicitly does not change the number, so this is a cutoff on large
+# results rather than a row cap. A 5M-wide slice returns exactly its full count.
+# 10M is used here: ~20k rows / ~3 MB per chunk, roughly a fifth of the size
+# where truncation was observed, so there is real margin if the cutoff moves
+# with server load.
+GAIA_CHUNK_WIDTH = 10_000_000
 GAIA_RANDOM_INDEX_MAX = 1_811_709_771
+
+
+# Default row cap for TAP queries. Chosen well above any table we ask for and
+# well below anything that would be a runaway dump; the point is not the number
+# but that MAXREC is *stated*, so a clipped result is detectable.
+DEFAULT_TAP_MAXREC = 2_000_000
 
 
 def _tap_target(
@@ -151,12 +171,19 @@ def _tap_target(
     approx_bytes: int | None = None,
     note: str = "",
     esa_style: bool = False,
+    maxrec: int = DEFAULT_TAP_MAXREC,
 ) -> DownloadTarget:
     """A TAP sync query. ESA spells the parameters in uppercase, CDS/IPAC lower."""
     if esa_style:
-        params = {"REQUEST": "doQuery", "LANG": "ADQL", "FORMAT": "csv", "QUERY": query}
+        params = {
+            "REQUEST": "doQuery", "LANG": "ADQL", "FORMAT": "csv",
+            "MAXREC": str(maxrec), "QUERY": query,
+        }
     else:
-        params = {"request": "doQuery", "lang": "adql", "format": "csv", "query": query}
+        params = {
+            "request": "doQuery", "lang": "adql", "format": "csv",
+            "MAXREC": str(maxrec), "query": query,
+        }
     return DownloadTarget(
         filename=filename,
         url=base_url,
@@ -165,6 +192,7 @@ def _tap_target(
         media_type="text/csv",
         approx_bytes=approx_bytes,
         note=note,
+        maxrec=maxrec,
     )
 
 
@@ -173,9 +201,14 @@ def _ipac_tap_target(table: str, timeout: float = 300.0) -> DownloadTarget:
     return DownloadTarget(
         filename=f"{table}.csv",
         url=EXOPLANET_ARCHIVE_TAP,
-        params={"query": f"select * from {table}", "format": "csv"},
+        params={
+            "query": f"select * from {table}",
+            "format": "csv",
+            "MAXREC": str(DEFAULT_TAP_MAXREC),
+        },
         timeout=timeout,
         media_type="text/csv",
+        maxrec=DEFAULT_TAP_MAXREC,
     )
 
 
@@ -499,34 +532,60 @@ LINKS["hyg_database"] = SourceLinks(
     ),
 )
 
+_SIMBAD_BASIC_COLS = (
+    "b.main_id, b.ra, b.dec, b.otype, b.otype_txt, b.sp_type, b.plx_value, b.plx_err, "
+    "b.pmra, b.pmdec, b.rvz_radvel, b.morph_type, b.nbref"
+)
+
+_SIMBAD_QUERIES: dict[str, str] = {
+    f"otype_{_slug}.csv": (
+        f"select {_SIMBAD_BASIC_COLS} from basic b "
+        f"join otypes o on b.oid = o.oidref where o.otype = '{_otype}'"
+    )
+    for _slug, _otype in [
+        ("brown_dwarfs", "BD*"),
+        ("neutron_stars", "N*"),
+        ("black_holes", "BH"),
+        ("supergiants", "sg*"),
+    ]
+}
+# No SIMBAD otype exists for hypergiants; the MK luminosity class does the work
+# instead ("Ia+" / "Ia-0" is the standard notation for a hypergiant).
+_SIMBAD_QUERIES["otype_hypergiants.csv"] = (
+    f"select {_SIMBAD_BASIC_COLS} from basic b "
+    "where b.sp_type like '%Ia+%' or b.sp_type like '%Ia-0%' or b.sp_type like '%0-Ia%'"
+)
+for _slug, _prefix in [
+    ("gaia_dr3", "Gaia DR3 "),
+    ("tic", "TIC "),
+    ("twomass", "2MASS "),
+    ("hd", "HD "),
+]:
+    _SIMBAD_QUERIES[f"xwalk_hip_{_slug}.csv"] = (
+        f"select i1.id as hip_id, i2.id as other_id from ident i1 "
+        f"join ident i2 on i1.oidref = i2.oidref "
+        f"where i1.id like 'HIP %' and i2.id like '{_prefix}%'"
+    )
+_SIMBAD_QUERIES["xwalk_hip_main_id.csv"] = (
+    "select i.id as hip_id, b.main_id, b.otype, b.sp_type "
+    "from ident i join basic b on i.oidref = b.oid where i.id like 'HIP %'"
+)
+
 LINKS["simbad_tap"] = SourceLinks(
     status=LinkStatus.QUERY,
     landing_page="https://simbad.cds.unistra.fr/simbad/sim-tap",
-    targets=(
-        _tap_target(
-            SIMBAD_TAP,
-            "select b.main_id, b.ra, b.dec, b.otype_txt, b.sp_type, b.plx_value, "
-            "b.plx_err, b.pmra, b.pmdec, b.rvz_radvel, f.V, f.B "
-            "from basic as b join allfluxes as f on f.oidref = b.oid "
-            "where f.V < 10",
-            "bright_basic.csv",
-            timeout=900.0,
-            note=(
-                "Magnitudes live in `allfluxes`, not `basic` — the join is required. "
-                "V < 10 keeps this to the naked-eye/small-telescope population that "
-                "actually overlaps HYG and the exoplanet hosts, instead of dumping all "
-                ">15M rows of `basic`."
-            ),
-        ),
-        _tap_target(
-            SIMBAD_TAP,
-            "select i.id, i.oidref, b.main_id from ident as i "
-            "join basic as b on b.oid = i.oidref "
-            "join allfluxes as f on f.oidref = b.oid where f.V < 10",
-            "bright_identifiers.csv",
-            timeout=900.0,
-            note="Cross-identifiers (HD/HIP/Gaia/TYC/... aliases) for the same subset.",
-        ),
+    targets=tuple(
+        _tap_target(SIMBAD_TAP, _adql, _filename, timeout=600.0)
+        for _filename, _adql in _SIMBAD_QUERIES.items()
+    ),
+    note=(
+        "Seven bounded queries, not a dump: five object-type slices that feed "
+        "stars/special/ and four HIP<->{main_id,Gaia DR3,TIC,2MASS,HD} identifier "
+        "joins that feed _catalog/crosswalk.parquet. Two gotchas verified live — "
+        "magnitudes live in `allfluxes`, not `basic`, so a magnitude cut needs the "
+        "join (a bare `where V < 10` returns HTTP 400 'Unknown column V'); and "
+        "SIMBAD silently truncates at MAXREC=50000, so MAXREC is always sent "
+        "explicitly and the downloader rejects a result sitting on the limit."
     ),
 )
 
@@ -539,9 +598,9 @@ LINKS["gaia_dr3_tap"] = SourceLinks(
             f"select {GAIA_SUBSET_COLUMNS} from gaiadr3.gaia_source "
             f"where random_index >= {_start} and random_index < {_start + GAIA_CHUNK_WIDTH} "
             f"and {GAIA_SUBSET_WHERE}",
-            f"subset_{_start // GAIA_CHUNK_WIDTH:03d}.csv",
+            f"subset_{_start // GAIA_CHUNK_WIDTH:04d}.csv",
             timeout=900.0,
-            approx_bytes=9_000_000,
+            approx_bytes=3_200_000,
             esa_style=True,
         )
         for _start in range(0, GAIA_RANDOM_INDEX_MAX, GAIA_CHUNK_WIDTH)
@@ -549,9 +608,11 @@ LINKS["gaia_dr3_tap"] = SourceLinks(
     note=(
         "Tier 3. Full gaia_source is 1.81e9 rows; the brief's default subset "
         "(parallax > 10 mas OR G < 12) is 3,602,117 rows — counted live 2026-08-21, "
-        "not estimated. Split into 37 `random_index` slices so each one fits the sync "
-        "endpoint (a 50M-wide slice measured ~90k rows in ~70 s). Still never runs "
-        "without an explicit --tier 3 instruction."
+        "not estimated. Split into 182 `random_index` slices of 10M each. The width "
+        "is a correctness constraint: at 50M the sync endpoint silently returned "
+        "90,113 of a matching 99,309 rows, while a 5M slice returned its exact count "
+        "(see GAIA_CHUNK_WIDTH). Still never runs without an explicit --tier 3 "
+        "instruction."
     ),
 )
 
@@ -781,6 +842,103 @@ LINKS["messier_catalog"] = SourceLinks(
             note="Messier objects are the rows with a non-empty `M` column.",
         ),
     ),
+)
+
+
+# ---------------------------------------------------------------------------
+# Fase 5 additions (ported into the link registry on merge with main)
+# ---------------------------------------------------------------------------
+LINKS["atnf_pulsar_catalog"] = SourceLinks(
+    status=LinkStatus.QUERY,
+    landing_page="https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=B/psr",
+    targets=(_vizier_target("B/psr/psr", "psr.csv"),),
+)
+LINKS["blackcat_bh_transients"] = SourceLinks(
+    status=LinkStatus.QUERY,
+    landing_page="https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=J/A+A/587/A61",
+    targets=(_vizier_target("J/A+A/587/A61/tablea1", "blackcat.csv"),),
+)
+LINKS["iau_meteor_data_center"] = SourceLinks(
+    status=LinkStatus.DIRECT,
+    landing_page="https://www.ta3.sk/IAUC22DB/MDC2022/",
+    targets=(
+        DownloadTarget(
+            filename="streamestablisheddata.txt",
+            url="https://www.ta3.sk/IAUC22DB/MDC2022/Etc/streamestablisheddata2026.txt",
+            timeout=120.0,
+            media_type="text/plain",
+            note="Established showers only (IAU-numbered and named).",
+        ),
+        DownloadTarget(
+            filename="streamfulldata.txt",
+            url="https://www.ta3.sk/IAUC22DB/MDC2022/Etc/streamfulldata2026.txt",
+            timeout=120.0,
+            media_type="text/plain",
+            note="Full working list, including unconfirmed showers.",
+        ),
+    ),
+    note=(
+        "Filenames carry the year (…2026.txt) and the MDC rolls them forward, so this "
+        "pair needs re-checking each year rather than being assumed stable."
+    ),
+)
+LINKS["sbdb_query_hyperbolic"] = SourceLinks(
+    status=LinkStatus.QUERY,
+    landing_page="https://ssd-api.jpl.nasa.gov/doc/sbdb_query.html",
+    targets=tuple(
+        DownloadTarget(
+            filename=f"{sb_class}.json",
+            url=SBDB_QUERY,
+            params={
+                "fields": (
+                    "full_name,spkid,pdes,name,a,q,e,i,om,w,tp,epoch,H,diameter,"
+                    "albedo,class,neo,pha"
+                ),
+                "sb-class": sb_class,
+            },
+            timeout=180.0,
+            media_type="application/json",
+        )
+        for sb_class in ("HYP", "PAR", "HYA")
+    ),
+    note=(
+        "Hyperbolic/parabolic classes need `q` and `tp` instead of `ma`: a hyperbolic "
+        "orbit has no mean anomaly to speak of, so the standard SBDB field list used "
+        "elsewhere would come back mostly null."
+    ),
+)
+
+# Epoch of the bulk of SBDB's orbit solutions, so the giant-planet longitudes line
+# up with the asteroid elements they get compared against (trojan L4/L5 split in
+# build/small_bodies.py) with no propagation needed for most objects.
+SBDB_REFERENCE_EPOCH_JD = "2461200.5"
+
+LINKS["jpl_horizons_elements"] = SourceLinks(
+    status=LinkStatus.QUERY,
+    landing_page="https://ssd.jpl.nasa.gov/horizons/app.html",
+    targets=tuple(
+        DownloadTarget(
+            filename=f"{name}.txt",
+            url=HORIZONS_API,
+            params={
+                "format": "text",
+                "COMMAND": f"'{command}'",
+                "OBJ_DATA": "'NO'",
+                "MAKE_EPHEM": "'YES'",
+                "EPHEM_TYPE": "'ELEMENTS'",
+                "CENTER": "'500@10'",
+                "TLIST": SBDB_REFERENCE_EPOCH_JD,
+                "OUT_UNITS": "'AU-D'",
+            },
+            timeout=120.0,
+            media_type="text/plain",
+        )
+        for name, command in {
+            "jupiter_barycenter": "5",
+            "neptune_barycenter": "8",
+        }.items()
+    ),
+    note="Heliocentric osculating elements at the SBDB reference epoch.",
 )
 
 
