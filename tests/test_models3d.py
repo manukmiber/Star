@@ -92,6 +92,34 @@ def test_catalog_file_urls_flags_upstream_typo():
     assert broken[0]["url"] is None
 
 
+def test_dataset_dir_hints_and_fallback_urls():
+    """A dead link is retried in the folder its dataset siblings actually use."""
+    data_js = DATA_JS.replace(
+        "{downloadLink: Hudson.basepath + '216kleopatra.tab', fileFormat: 'TAB'}",
+        "{downloadLink: 'shape-models/files/RADAR/216kleopatra.tab', fileFormat: 'TAB'}",
+    )
+    objects = sbn.parse_catalog(data_js, DATASETS_JS)
+    hints = sbn.dataset_dir_hints(objects)
+    assert hints["Radar Shape Models (Hudson)"] == ["RADAR"]
+
+    kleopatra = next(o for o in objects if o["name"] == "216 Kleopatra")
+    files = sbn.catalog_file_urls(kleopatra, "https://sbn.psi.edu/pds/", hints)
+    ios = next(f for f in files if f["role"] == "preview_ios")
+    # the upstream typo leaves no usable url, but the filename still points somewhere
+    assert ios["url"] is None
+    assert ios["fallback_urls"][0] == (
+        "https://sbn.psi.edu/pds/shape-models/files/RADAR/216kleopatra.tab.usdz"
+    )
+
+
+def test_fallback_urls_without_hints_uses_written_parent_then_bare_name():
+    urls = sbn.fallback_urls("https://sbn.psi.edu/pds/RADAR/1998ky26.tab.usdz")
+    assert urls == [
+        "https://sbn.psi.edu/pds/shape-models/files/RADAR/1998ky26.tab.usdz",
+        "https://sbn.psi.edu/pds/shape-models/files/1998ky26.tab.usdz",
+    ]
+
+
 def test_asset_links_filters_by_extension_and_resolves_relative():
     html = """
     <a href="/dam/hubble/Main%20body.stl?emrc=1">body</a>

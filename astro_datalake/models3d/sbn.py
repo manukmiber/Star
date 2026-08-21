@@ -128,12 +128,61 @@ def parse_catalog(data_js: str, datasets_js: str) -> list[dict]:
     return objects
 
 
-def catalog_file_urls(entry: dict, base_url: str) -> list[dict]:
+# Where the catalog's derived meshes and previews actually live. Several entries
+# are written against a base that 404s (or, for the ios previews, against no base
+# at all), but the file itself is served from here under <parent>/<name> — so a
+# failed URL is retried against this base before being reported as missing.
+FALLBACK_BASE = "https://sbn.psi.edu/pds/shape-models/files/"
+
+
+def dataset_dir_hints(objects: list[dict]) -> dict[str, list[str]]:
+    """Per dataset, the `files/<dir>/` folders its working links actually use.
+
+    Entries in one dataset share a folder ("RADAR", "SATURN_SMALL_MOONS", ...),
+    but only some of them spell it out: the rest point at the PDS archive host,
+    whose own directory name ("data") says nothing about where the derived mesh
+    lives. Collecting the folder from the entries that do get it right is what
+    lets the broken ones be retried in the right place, instead of guessing.
+    """
+    import re
+
+    # links appear both relative ("shape-models/files/RADAR/x.obj") and absolute
+    pattern = re.compile(r"shape-models/files/([^/\"]+)/")
+    hints: dict[str, list[str]] = {}
+    for entry in objects:
+        for dataset in entry.get("datasets") or []:
+            name = dataset.get("name") or ""
+            for match in pattern.finditer(json.dumps(dataset)):
+                folder = match.group(1)
+                hints.setdefault(name, [])
+                if folder not in hints[name]:
+                    hints[name].append(folder)
+    return hints
+
+
+def fallback_urls(link: str, dir_hints: list[str] | None = None) -> list[str]:
+    """Candidate URLs for a link that did not serve a file at its written form."""
+    from urllib.parse import urlparse
+
+    parts = [p for p in urlparse(link).path.split("/") if p]
+    if not parts:
+        return []
+    name = parts[-1]
+    candidates = [FALLBACK_BASE + f"{folder}/{name}" for folder in dir_hints or []]
+    if len(parts) >= 2:
+        candidates.append(FALLBACK_BASE + f"{parts[-2]}/{name}")
+    candidates.append(FALLBACK_BASE + name)
+    return [c for i, c in enumerate(candidates) if c not in candidates[:i] and c != link]
+
+
+def catalog_file_urls(entry: dict, base_url: str,
+                      dir_hints: dict[str, list[str]] | None = None) -> list[dict]:
     """Flatten one catalog entry into downloadable {url, role, format} records."""
     from urllib.parse import urljoin
 
     out: list[dict] = []
     for dataset in entry.get("datasets") or []:
+        hints = (dir_hints or {}).get(dataset.get("name") or "", [])
         files = dataset.get("files") or {}
         data = files.get("data") or {}
         previews = files.get("previews") or {}
@@ -152,14 +201,17 @@ def catalog_file_urls(entry: dict, base_url: str) -> list[dict]:
                 out.append({
                     "url": None,
                     "broken_upstream": link,
+                    "fallback_urls": fallback_urls(link.replace('"', ""), hints),
                     "role": role,
                     "format": (spec.get("fileFormat") or spec.get("fileformat") or "").upper(),
                     "dataset_name": dataset.get("name"),
                     "dataset_link": dataset.get("link"),
                 })
                 continue
+            resolved = urljoin(base_url, link)
             out.append({
-                "url": urljoin(base_url, link),
+                "url": resolved,
+                "fallback_urls": fallback_urls(resolved, hints),
                 "role": role,
                 "format": (spec.get("fileFormat") or spec.get("fileformat") or link.rsplit(".", 1)[-1]).upper(),
                 "dataset_name": dataset.get("name"),

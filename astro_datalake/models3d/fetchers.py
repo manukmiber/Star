@@ -22,7 +22,14 @@ from ..core.cache import sha256_of_file, sidecar_path
 from ..core.http import get
 from ..core.naming import slugify
 from . import sbn
-from .stream import StreamReport, TooLarge, filename_from_url, stream_download, write_manifest
+from .stream import (
+    StreamReport,
+    TooLarge,
+    filename_from_url,
+    human_bytes,
+    stream_download,
+    write_manifest,
+)
 
 StreamFetcher = Callable[[httpx.AsyncClient, Path], Awaitable[StreamReport]]
 
@@ -71,23 +78,47 @@ async def _fetch_file(
     *,
     max_bytes: int | None = None,
     expect_binary: bool = True,
+    fallbacks: list[str] | None = None,
     extra: dict | None = None,
 ) -> None:
-    """Download one asset, updating `report` with the outcome either way."""
-    try:
-        written, was_cached = await stream_download(client, url, dest, max_bytes=max_bytes)
-    except TooLarge as exc:
-        report.skipped.append(str(exc))
-        return
-    except (httpx.HTTPError, OSError) as exc:
-        report.errors.append(f"{url}: {type(exc).__name__}: {exc}")
+    """Download one asset, updating `report` with the outcome either way.
+
+    `fallbacks` are alternative URLs for the same file, tried in order when the
+    first one 404s or answers with an HTML shell. Catalogs here link plenty of
+    files against a base that no longer serves them while the file itself is
+    still online elsewhere; the manifest records which URL actually served it.
+    """
+    candidates = [url, *(fallbacks or [])]
+    failures: list[str] = []
+    written = 0
+    was_cached = False
+    served_by = None
+
+    for candidate in candidates:
+        try:
+            written, was_cached = await stream_download(client, candidate, dest, max_bytes=max_bytes)
+        except TooLarge as exc:
+            report.skipped.append(str(exc))
+            return
+        except (httpx.HTTPError, OSError) as exc:
+            failures.append(f"{candidate}: {type(exc).__name__}: {exc}")
+            continue
+
+        if expect_binary and _looks_like_html(dest):
+            dest.unlink(missing_ok=True)
+            sidecar_path(dest).unlink(missing_ok=True)
+            failures.append(f"{candidate}: server membalas HTML, bukan file biner (soft-404)")
+            continue
+
+        served_by = candidate
+        break
+
+    if served_by is None:
+        report.errors.append(failures[0] if failures else f"{url}: tidak ada kandidat URL")
         return
 
-    if expect_binary and _looks_like_html(dest):
-        dest.unlink(missing_ok=True)
-        sidecar_path(dest).unlink(missing_ok=True)
-        report.skipped.append(f"{url}: server membalas HTML, bukan file biner (soft-404)")
-        return
+    if served_by != url:
+        report.skipped.append(f"{url}: tidak melayani file, dipakai fallback {served_by}")
 
     if was_cached:
         report.cached += 1
@@ -96,7 +127,9 @@ async def _fetch_file(
         report.bytes_written += written
     assert report.root is not None
     entry = {"path": str(dest.relative_to(report.root)), "size": dest.stat().st_size,
-             "sha256": sha256_of_file(dest), "source_url": url}
+             "sha256": sha256_of_file(dest), "source_url": served_by}
+    if served_by != url:
+        entry["url_in_catalog"] = url
     if extra:
         entry.update(extra)
     report.files.append(entry)
@@ -206,26 +239,31 @@ def sbn_shape_models(key: str = "pds_sbn_shape_models") -> StreamFetcher:
         objects = sbn.parse_catalog(data_js, datasets_js)
         (dest / "catalog.json").write_text(json.dumps(objects, indent=2, ensure_ascii=False) + "\n")
         report.extra["object_count"] = len(objects)
+        dir_hints = sbn.dataset_dir_hints(objects)
 
         for entry in objects:
             obj_slug = slugify(entry["name"]) or "unnamed"
             folder = dest / entry["type"] / obj_slug
-            files = sbn.catalog_file_urls(entry, SBN_LINK_BASE)
+            files = sbn.catalog_file_urls(entry, SBN_LINK_BASE, dir_hints)
             if not files:
                 report.skipped.append(f"{entry['name']}: tidak ada file di katalog sumber")
                 continue
             for spec in files:
-                if spec.get("broken_upstream"):
+                candidates = ([spec["url"]] if spec.get("url") else []) + spec["fallback_urls"]
+                if not candidates:
                     report.skipped.append(
                         f"{entry['name']} ({spec['role']}): link rusak di sumber "
-                        f"({spec['broken_upstream']})"
+                        f"({spec.get('broken_upstream')}), tidak ada kandidat lain"
                     )
                     continue
+                extra = {"object": entry["name"], "object_type": entry["type"],
+                         "role": spec["role"], "format": spec["format"],
+                         "dataset": spec.get("dataset_name")}
+                if spec.get("broken_upstream"):
+                    extra["broken_upstream"] = spec["broken_upstream"]
                 await _fetch_file(
-                    client, spec["url"], folder / filename_from_url(spec["url"]), report,
-                    extra={"object": entry["name"], "object_type": entry["type"],
-                           "role": spec["role"], "format": spec["format"],
-                           "dataset": spec.get("dataset_name")},
+                    client, candidates[0], folder / filename_from_url(candidates[0]), report,
+                    fallbacks=candidates[1:], extra=extra,
                 )
         return _finish(report, dest, SBN_BASE)
 
@@ -381,5 +419,89 @@ def page_textures(key: str, pages: dict[str, str], *, max_bytes: int,
                     report, max_bytes=max_bytes, extra={"page": page_url},
                 )
         return _finish(report, dest, next(iter(pages.values()), ""))
+
+    return fetch
+
+
+# ---------------------------------------------------------------------------
+# USGS Astrogeology global mosaics (planet/moon surface textures)
+# ---------------------------------------------------------------------------
+USGS_SEARCH = "https://astrogeology.usgs.gov/search/results"
+USGS_MAP = "https://astrogeology.usgs.gov/search/map/"
+# The Astropedia product pages are JS-rendered, but the HTML they serve already
+# contains the direct links to the rendered products on planetarymaps.usgs.gov —
+# that host is what actually serves the GeoTIFF/JPEG, not the CKAN resource ids.
+USGS_FILE_HOST = "planetarymaps.usgs.gov"
+
+
+def usgs_mosaics(key: str, queries: list[str], *, max_bytes: int, total_budget: int,
+                 want: list[str], extensions: set[str] | None = None) -> StreamFetcher:
+    """Global surface mosaics, chosen by body name and kept inside a byte budget.
+
+    `queries` are searched via the portal's JSON endpoint; `want` are substrings
+    of the product slug (usually body names) that a hit must contain, so the
+    crawl stays on global maps of bodies this data lake has no texture for
+    rather than sweeping 1600 regional products. Products are taken smallest
+    first: a 900 MB GeoTIFF and its 25 MB browse image show the same surface,
+    and the budget buys more bodies that way.
+    """
+    wanted_ext = extensions or {".tif", ".jpg", ".png"}
+
+    async def fetch(client: httpx.AsyncClient, dest: Path) -> StreamReport:
+        report = _new_report(key, dest)
+        slugs: list[str] = []
+        for query in queries:
+            try:
+                payload = (await get(client, USGS_SEARCH, params={"q": query}, timeout=90)).json()
+            except (httpx.HTTPError, json.JSONDecodeError) as exc:
+                report.errors.append(f"{USGS_SEARCH}?q={query}: {type(exc).__name__}: {exc}")
+                continue
+            for result in payload.get("results") or []:
+                slug = result.get("name") or ""
+                if slug and slug not in slugs and any(w in slug.lower() for w in want):
+                    slugs.append(slug)
+        report.extra["slugs_considered"] = slugs
+
+        found: list[dict] = []
+        for slug in slugs:
+            try:
+                html = (await get(client, USGS_MAP + slug, timeout=90)).text
+            except httpx.HTTPError as exc:
+                report.errors.append(f"{USGS_MAP}{slug}: {type(exc).__name__}: {exc}")
+                continue
+            for link in asset_links(html, USGS_MAP + slug, wanted_ext):
+                if USGS_FILE_HOST not in urlparse(link).netloc:
+                    continue
+                try:
+                    head = await client.head(link, follow_redirects=True, timeout=60)
+                    size = int(head.headers.get("content-length") or 0)
+                except (httpx.HTTPError, ValueError):
+                    size = 0
+                found.append({"slug": slug, "url": link, "size": size})
+
+        spent = 0
+        for item in sorted(found, key=lambda i: i["size"]):
+            if item["size"] > max_bytes:
+                report.skipped.append(
+                    f"{item['url']}: {human_bytes(item['size'])} > batas per-file "
+                    f"{human_bytes(max_bytes)}"
+                )
+                continue
+            if spent + item["size"] > total_budget:
+                report.skipped.append(
+                    f"{item['url']}: tidak muat di sisa budget "
+                    f"{human_bytes(total_budget - spent)}"
+                )
+                continue
+            before = report.downloaded
+            await _fetch_file(
+                client, item["url"], dest / item["slug"] / filename_from_url(item["url"]),
+                report, max_bytes=max_bytes,
+                extra={"product": item["slug"], "page": USGS_MAP + item["slug"]},
+            )
+            if report.downloaded > before:
+                spent += item["size"]
+        report.extra["budget_bytes"] = total_budget
+        return _finish(report, dest, "https://astrogeology.usgs.gov/search")
 
     return fetch

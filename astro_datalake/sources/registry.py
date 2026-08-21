@@ -677,11 +677,15 @@ register(SourceSpec(
     base_url="https://astrogeology.usgs.gov/search",
     probe_url="https://astrogeology.usgs.gov/search/results?q=global+mosaic",
     license="Public domain (USGS/NASA), atribusi per-produk",
-    notes="TIDAK ditarik. /search/results memang mengembalikan JSON (1643 entri), tapi tiap "
-    "entri hanya memberi slug + halaman HTML yang di-render JS; link file sebenarnya ada di "
-    "resource CKAN per-dataset, dan satu mosaik global bisa puluhan sampai ratusan GB "
-    "(GeoTIFF, resolusi meter). Perlu downloader khusus + pilihan resolusi, dan tetap di luar "
-    "kuota disk sesi ini — sama alasannya dengan usgs_gazetteer.",
+    notes="Ditarik sebagian (percobaan kedua, 2026-08-21). /search/results mengembalikan JSON "
+    "(1643 entri) berisi slug; halaman produk /search/map/<slug> memang di-render JS, TAPI "
+    "HTML mentahnya sudah memuat link langsung ke produk jadi di planetarymaps.usgs.gov "
+    "(bukan resource CKAN yang cuma browse/thumb). Percobaan pertama gagal karena slug-nya "
+    "ditebak, bukan diambil dari hasil pencarian — halaman yang tidak ada dibalas HTTP 200 "
+    "berisi shell pencarian, bukan 404. Satu mosaik global bisa ratusan MB sampai ratusan GB, "
+    "jadi downloader-nya membatasi per-file dan total (lihat MAX_USGS_FILE_BYTES / "
+    "USGS_TOTAL_BUDGET di models3d/plan.py) dan memprioritaskan body yang belum punya tekstur "
+    "dari sumber lain. Tetap Tier 3: bukan sesuatu yang jalan tanpa diminta.",
 ))
 register(SourceSpec(
     key="solarsystemscope_textures",
@@ -695,7 +699,9 @@ register(SourceSpec(
     "URL unduhan langsung sama-sama membalas HTTP 202 berisi redirect ke "
     "/.well-known/sgcaptcha/ (diverifikasi 2026-08-21, dengan dan tanpa User-Agent browser). "
     "Menembus captcha bukan cara yang benar untuk mengambil data; tekstur planet/bintang "
-    "yang setara diambil dari nasa_3d_resources ('Images and Textures') dan nasa_svs_texture_kits.",
+    "yang setara diambil dari nasa_3d_resources ('Images and Textures'), nasa_svs_texture_kits, "
+    "dan usgs_planetary_mosaics. Dicoba ulang 2026-08-21 dengan User-Agent browser: masih 202 "
+    "+ captcha.",
 ))
 
 
