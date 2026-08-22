@@ -108,11 +108,18 @@ Results land in `data/_catalog/link-check.json`, merged rather than
 overwritten so checking one source doesn't discard what's known about the
 rest.
 
-Latest full run (2026-08-22, 52 sources / 276 registered targets, 98
-checked): **47 ready to download**, 3 hitting the intermittent CDS/VizieR
-TAP outage, 1 retired (`nssdc_planetary_factsheet`, superseded by
-`le_systeme_solaire` + `jpl_horizons`), and 1 behind a credential wall
-(Space-Track).
+Latest full run (2026-08-22, `--full`, all 52 sources / 276 targets):
+**276/276 links working — 50 ready to download**, 1 retired
+(`nssdc_planetary_factsheet`, superseded by `le_systeme_solaire` +
+`jpl_horizons`) and 1 behind a credential wall (Space-Track).
+
+That run doubles as a check on the sampling above: all 182 Gaia chunks pass,
+so the four-slice spread was not hiding a bad one. It also settles the
+CDS/VizieR sources — an earlier run had `wds`, `sb9` and `msc` flagged as a
+server-side outage rather than broken links, and on re-check they pass
+unchanged. That is the classification doing its job: "URL looks right, retry
+later" was the correct call, and the number moves between runs because CDS
+does, not because the links do.
 
 ## Space-Track
 

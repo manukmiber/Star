@@ -49,9 +49,16 @@ menyebutkan itu; sumber yang target-nya memang beda-beda (10 benda
 `jpl_horizons`, 11 kelas `sbdb_query_full`) tetap dicek semua. `--full`
 untuk mengecek semuanya.
 
-Hasil run penuh 2026-08-22 (52 sumber / 276 target terdaftar, 98 dicek):
-**47 siap didownload**, 3 kena gangguan server CDS/VizieR yang hilang-timbul,
-1 pensiun (`nssdc_planetary_factsheet`), 1 butuh kredensial (Space-Track).
+Hasil run penuh tanpa sampling 2026-08-22 (52 sumber / **276 target, semuanya
+dicek**): **276/276 link berfungsi — 50 siap didownload**, 1 pensiun
+(`nssdc_planetary_factsheet`), 1 butuh kredensial (Space-Track).
+
+Run itu sekaligus jadi bukti dua hal. Pertama, semua 182 potongan Gaia lolos,
+jadi sampel 4-slice memang tidak menyembunyikan potongan rusak. Kedua, tiga
+sumber CDS/VizieR (`wds`, `sb9`, `msc`) yang di run sebelumnya ditandai
+"gangguan sisi server" ternyata lolos apa adanya saat dicek ulang — persis
+seperti yang diklaim klasifikasi itu. Angkanya bergerak antar-run karena CDS
+yang hilang-timbul, bukan karena link-nya.
 
 ### Digabung dengan registry link dari Fase 8
 
