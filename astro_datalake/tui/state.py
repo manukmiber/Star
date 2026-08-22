@@ -12,7 +12,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ..core.config import settings
-from ..downloaders import DOWNLOAD_PLAN, declared_requests
+from ..downloaders import DOWNLOAD_PLAN, unfetchable_reason
+from ..sources.links import LINKS
 from ..sources import spacetrack as st
 from ..sources.registry import SOURCES, SourceSpec
 
@@ -52,12 +53,19 @@ class SourceRow:
         return DOWNLOAD_PLAN.get(self.spec.key) is not None
 
     @property
-    def request_count(self) -> int:
-        if self.spec.key == "spacetrack":
-            from ..downloaders import SPACETRACK_REQUESTS
+    def targets(self) -> tuple:
+        """The concrete download targets for this source, from the registry."""
+        links = LINKS.get(self.spec.key)
+        return links.targets if links is not None else ()
 
-            return len(SPACETRACK_REQUESTS)
-        return len(declared_requests(self.spec.key))
+    @property
+    def request_count(self) -> int:
+        return len(self.targets)
+
+    @property
+    def blocked_reason(self) -> str | None:
+        """Why this source can't be pulled right now, or None if it can."""
+        return unfetchable_reason(self.spec.key)
 
     @property
     def pulled(self) -> bool:

@@ -98,7 +98,7 @@ def build(raw_root: Path, out_root: Path) -> BuildReport:
         combined = pl.concat(frames, how="diagonal_relaxed")
         purpose_children.append(purpose)
         write_category_table(purpose_dir / purpose, combined)
-        write_metadata(purpose_dir / purpose / "metadata.json", source="celestrak_gp", source_url="https://celestrak.org/NORAD/elements/gp.php", record_count=combined.height)
+        write_metadata(purpose_dir / purpose / "metadata.json", source=" + ".join(keys), source_url="https://celestrak.org/NORAD/elements/gp.php", record_count=combined.height)
         write_text(purpose_dir / purpose / "README.md", f"# {purpose}\n\n{combined.height} objek, dari CelesTrak GROUP={'/'.join(k.replace('celestrak_gp_', '') for k in keys)}.\n")
     write_category_index(purpose_dir, purpose_children, "Dari taksonomi GROUP milik CelesTrak sendiri (starlink/gps-ops+galileo/weather/science/military/cubesat).")
 

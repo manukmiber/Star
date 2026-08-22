@@ -32,6 +32,13 @@ DEFAULT_CONTACT_EMAIL = "bgas3453@gmail.com"
 
 ENV_HOME = "ASTRO_DL_HOME"
 
+# api.le-systeme-solaire.net requires `Authorization: Bearer <key>` on every
+# request. Keys are free and self-service (https://api.le-systeme-solaire.net/
+# generatekey.html) and grant read-only access to public solar-system data, so
+# this one is checked in on purpose to keep the source fetchable out of the box.
+# Override with ASTRO_DL_SOLARSYSTEM_API_KEY to use your own.
+DEFAULT_SOLAR_SYSTEM_API_KEY = "5eddd6b8-587c-4d85-94fd-250c1a750fdc"
+
 
 def _is_source_checkout(path: Path) -> bool:
     return (path / "pyproject.toml").exists() and (path / "astro_datalake").is_dir()
@@ -53,6 +60,19 @@ def resolve_project_root() -> Path:
 
 
 PROJECT_ROOT = resolve_project_root()
+
+
+def source_checkout_root() -> Path | None:
+    """The git checkout we're running from, or None when pip-installed.
+
+    Distinct from `project_root`, which is where *data* goes. Repo artifacts
+    (`public/manifest.json`, which is committed and deployed to Cloudflare)
+    belong to the checkout, not to the user's data directory — otherwise
+    `astro manifest` on an installed copy would write a stray file into
+    ~/.local/share and `--check` would compare against nothing.
+    """
+    repo_root = _PACKAGE_DIR.parent
+    return repo_root if _is_source_checkout(repo_root) else None
 
 
 def on_termux() -> bool:
@@ -82,6 +102,17 @@ class Settings:
         default_factory=lambda: os.environ.get("ASTRO_DL_CONTACT_EMAIL", DEFAULT_CONTACT_EMAIL)
     )
     user_agent: str = ""
+    solar_system_api_key: str = field(
+        default_factory=lambda: os.environ.get(
+            "ASTRO_DL_SOLARSYSTEM_API_KEY", DEFAULT_SOLAR_SYSTEM_API_KEY
+        )
+    )
+    spacetrack_user: str | None = field(
+        default_factory=lambda: os.environ.get("ASTRO_DL_SPACETRACK_USER")
+    )
+    spacetrack_password: str | None = field(
+        default_factory=lambda: os.environ.get("ASTRO_DL_SPACETRACK_PASS")
+    )
 
     requests_per_second_per_domain: float = 1.0
     max_retries: int = 5

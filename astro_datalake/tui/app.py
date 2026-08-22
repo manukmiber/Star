@@ -12,8 +12,9 @@ Four panes over the same machinery the CLI uses:
 
 Long jobs run in Textual workers, so the UI keeps repainting while a
 several-hundred-megabyte pull is in flight. Nothing here reimplements
-downloading: it calls `downloaders.DOWNLOAD_PLAN` and `linkcheck` directly,
-so the TUI and the CLI can never drift apart.
+downloading: it reads the same `sources/links.py` registry and calls
+`downloaders.DOWNLOAD_PLAN` and `linkcheck` directly, so the TUI, the CLI,
+the manifest and the website can never drift apart.
 """
 
 from __future__ import annotations
@@ -234,8 +235,6 @@ class AstroApp(App):
             detail.update("[dim]Tidak ada sumber terpilih.[/dim]")
             return
 
-        from ..downloaders import declared_requests
-
         lines = [
             f"[bold]{row.spec.name}[/bold]",
             f"[dim]key[/dim] {row.key}   [dim]tier[/dim] {row.spec.tier}   "
@@ -248,19 +247,18 @@ class AstroApp(App):
             lines.append(
                 f"[dim]link[/dim] {VERDICT_MARKUP.get(row.link_verdict, '')} {row.link_reason}"
             )
-        requests = declared_requests(row.key)
-        if row.key == "spacetrack":
-            from ..downloaders import SPACETRACK_REQUESTS
-
-            requests = SPACETRACK_REQUESTS
-        if requests:
-            lines.append(f"[dim]permintaan HTTP ({len(requests)})[/dim]")
-            for request in requests[:4]:
-                lines.append(f"  [cyan]{request.method}[/cyan] {request.url}")
-            if len(requests) > 4:
-                lines.append(f"  [dim]… dan {len(requests) - 4} lagi[/dim]")
-        else:
-            lines.append("[yellow]Tidak ada downloader[/yellow] — lihat catatan di bawah.")
+        targets = row.targets
+        if targets:
+            lines.append(f"[dim]target unduhan ({len(targets)})[/dim]")
+            for target in targets[:4]:
+                lines.append(
+                    f"  [cyan]{target.method}[/cyan] {target.filename} — {target.resolved_url}"
+                )
+            if len(targets) > 4:
+                lines.append(f"  [dim]… dan {len(targets) - 4} lagi[/dim]")
+        blocked = row.blocked_reason
+        if blocked:
+            lines.append(f"[yellow]Belum bisa ditarik:[/yellow] {blocked}")
         if row.spec.notes:
             lines.append(f"[dim]{row.spec.notes}[/dim]")
         detail.update("\n".join(lines))

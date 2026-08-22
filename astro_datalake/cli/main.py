@@ -6,7 +6,10 @@
   astro build                # normalisasi raw -> processed + bikin struktur folder
   astro verify                # cek checksum, cek row count, cek folder kosong
   astro status                # ringkasan: sumber apa saja yang sudah ada, ukuran, tanggal
+  astro manifest             # tulis ulang public/manifest.json (indeks download)
+  astro doctor               # cek mesin ini (path, disk, paket, terminal, jaringan)
   astro tui                  # TUI interaktif (juga jalan di Termux)
+  astro spacetrack ...       # query Space-Track sesuai dokumentasi API-nya
 """
 
 from __future__ import annotations
@@ -70,7 +73,7 @@ def _require_optional(*modules: str) -> None:
 @app.command()
 def build() -> None:
     """Normalize raw data into the processed per-object/per-system folder tree."""
-    _require_optional("polars", "bs4")
+    _require_optional("polars", "numpy", "bs4")
     from .commands import build as build_cmd
 
     build_cmd.run()
@@ -176,6 +179,44 @@ def tui() -> None:
         raise typer.Exit(code=1) from exc
 
     run_tui()
+
+
+@app.command()
+def manifest(
+    output: str = typer.Option(None, "--output", "-o", help="Tujuan file manifest."),
+    check: bool = typer.Option(
+        False, "--check", help="Jangan tulis; keluar 1 kalau manifest sudah basi."
+    ),
+) -> None:
+    """Regenerate public/manifest.json (the download index) from the link registry."""
+    from pathlib import Path
+
+    from ..manifest import (
+        NoSourceCheckoutError,
+        default_manifest_path,
+        manifest_is_current,
+        write_manifest,
+    )
+
+    try:
+        path = default_manifest_path() if output is None else Path(output)
+    except NoSourceCheckoutError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from exc
+    if check:
+        if manifest_is_current(path):
+            typer.secho(f"{path} is up to date.", fg=typer.colors.GREEN)
+            return
+        typer.secho(
+            f"{path} is stale — regenerate with `astro manifest`.",
+            fg=typer.colors.RED,
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    written = write_manifest(path)
+    typer.secho(
+        f"Wrote {written} ({written.stat().st_size:,} bytes)", fg=typer.colors.GREEN
+    )
 
 
 @app.command()

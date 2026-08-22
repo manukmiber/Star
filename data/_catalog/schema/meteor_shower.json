@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "meteor_shower",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": "string"
+    },
+    "iau_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "iau_number": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "activity": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "radiant_ra_deg": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "radiant_dec_deg": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parent_body": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "solution_count": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "display_name",
+    "solution_count"
+  ]
+}

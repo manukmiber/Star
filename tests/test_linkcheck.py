@@ -7,7 +7,7 @@ import pytest
 import respx
 
 from astro_datalake import linkcheck
-from astro_datalake.downloaders import DeclaredRequest
+from astro_datalake.sources.links import DownloadTarget
 
 
 # --- expected_kind_for -----------------------------------------------------
@@ -94,7 +94,7 @@ async def test_offsite_redirect_is_a_dead_link():
         result = await linkcheck.check_link(
             client,
             "nssdc",
-            DeclaredRequest("GET", "https://nssdc.gsfc.nasa.gov/planetary/factsheet/"),
+            DownloadTarget(filename="f.html", url="https://nssdc.gsfc.nasa.gov/planetary/factsheet/"),
         )
     assert result.redirected_offsite is True
     assert result.works is False
@@ -111,7 +111,7 @@ async def test_www_prefix_alone_is_not_a_redirect_failure():
     )
     async with httpx.AsyncClient(follow_redirects=True) as client:
         result = await linkcheck.check_link(
-            client, "celestrak_satcat", DeclaredRequest("GET", "https://celestrak.org/pub/satcat.csv")
+            client, "celestrak_satcat", DownloadTarget(filename="satcat.csv", url="https://celestrak.org/pub/satcat.csv")
         )
     assert result.redirected_offsite is False
     assert result.works is True
@@ -122,7 +122,7 @@ async def test_auth_wall_counts_as_a_live_endpoint():
     url = "https://www.space-track.org/basicspacedata/query/class/gp/format/json"
     respx.get(url).mock(return_value=httpx.Response(401, text="unauthorized"))
     async with httpx.AsyncClient(follow_redirects=True) as client:
-        result = await linkcheck.check_link(client, "spacetrack", DeclaredRequest("GET", url))
+        result = await linkcheck.check_link(client, "spacetrack", DownloadTarget(filename="f", url=url))
     assert result.auth_required is True
     assert result.works is True
 
@@ -138,24 +138,83 @@ async def test_transient_500_is_retried_before_being_condemned():
         ]
     )
     async with httpx.AsyncClient(follow_redirects=True) as client:
-        result = await linkcheck.check_link(client, "msc_catalog", DeclaredRequest("GET", url))
+        result = await linkcheck.check_link(client, "msc_catalog", DownloadTarget(filename="f", url=url))
     assert result.works is True
-    assert "after retry" in result.detail
+    assert "recovered after 1 retry" in result.detail
+
+
+# --- cheap twins of expensive targets --------------------------------------
+def test_adql_targets_are_checked_with_a_top_5():
+    """Verifying a link must not mean downloading the whole catalogue."""
+    target = DownloadTarget(
+        filename="wds.csv",
+        url="https://tapvizier.cds.unistra.fr/TAPVizieR/tap/sync",
+        params={"request": "doQuery", "lang": "adql", "format": "csv",
+                "MAXREC": "2000000", "query": 'select * from "B/wds/wds"'},
+    )
+    check_url = linkcheck._check_url_for(target)
+    assert "select+top+5+" in check_url
+    assert "MAXREC=5" in check_url
+    # The real download URL is untouched.
+    assert "top 5" not in target.resolved_url
+
+
+def test_an_already_capped_query_is_not_double_capped():
+    target = DownloadTarget(
+        filename="x.csv",
+        url="https://example.test/tap",
+        params={"query": "select top 10 * from t", "format": "csv"},
+    )
+    assert "top+5" not in linkcheck._check_url_for(target)
+
+
+def test_sbdb_targets_get_a_row_limit():
+    target = DownloadTarget(
+        filename="MBA.json",
+        url="https://ssd-api.jpl.nasa.gov/sbdb_query.api",
+        params={"fields": "full_name", "sb-class": "MBA"},
+    )
+    assert "limit=5" in linkcheck._check_url_for(target)
+
+
+def test_a_target_without_params_is_checked_as_is():
+    target = DownloadTarget(filename="satcat.csv", url="https://celestrak.org/pub/satcat.csv")
+    assert linkcheck._check_url_for(target) == target.url
 
 
 @respx.mock
-async def test_check_url_twin_is_used_instead_of_the_full_download():
-    real = "https://example.test/huge.csv"
-    cheap = "https://example.test/huge.csv?limit=5"
-    route = respx.get(cheap).mock(return_value=httpx.Response(200, text="a,b\n1,2\n"))
-    respx.get(real).mock(return_value=httpx.Response(500))
+async def test_the_cheap_twin_is_what_actually_gets_requested():
+    base = "https://example.test/tap"
+    target = DownloadTarget(
+        filename="huge.csv", url=base, params={"query": "select * from huge", "format": "csv"}
+    )
+    cheap = respx.get(url__startswith=base).mock(
+        return_value=httpx.Response(200, text="a,b\n1,2\n")
+    )
     async with httpx.AsyncClient(follow_redirects=True) as client:
-        result = await linkcheck.check_link(
-            client, "big", DeclaredRequest("GET", real, cheap)
-        )
-    assert route.called
+        result = await linkcheck.check_link(client, "big", target)
+    assert cheap.called
+    assert "top+5" in str(cheap.calls[0].request.url)
     assert result.works is True
-    assert result.url == real  # the report still names the real download URL
+    # The report still names the real download URL, not the twin.
+    assert result.url == target.resolved_url
+    assert "top 5" not in result.url
+
+
+# --- registry-driven expectations ------------------------------------------
+def test_media_type_from_the_registry_wins_over_url_guessing():
+    """The registry knows the format; the URL heuristics are only a fallback."""
+    assert linkcheck.expected_kind_for("https://x.test/opaque", "application/json") == "json"
+    assert linkcheck.expected_kind_for("https://x.test/opaque", "text/csv") == "csv"
+    # Unknown media type falls back to the URL.
+    assert linkcheck.expected_kind_for("https://x.test/a.csv", "application/octet-stream") == "csv"
+
+
+def test_every_registered_source_has_something_to_check():
+    from astro_datalake.sources.registry import SOURCES
+
+    for key in SOURCES:
+        assert linkcheck._requests_for(key), f"{key} has no checkable target"
 
 
 # --- verdicts --------------------------------------------------------------
@@ -231,3 +290,67 @@ def test_a_genuine_404_is_still_broken():
         linkcheck.LinkResult("k", "GET", "u", "u", ok=False, http_status=404, detail="HTTP 404")
     ]
     assert linkcheck._verdict_for(report)[0] == linkcheck.VERDICT_BROKEN
+
+
+# --- method and redirect handling ------------------------------------------
+@respx.mock
+async def test_a_post_target_is_checked_with_post():
+    """The USGS Gazetteer is a POST-only form; GETting it returns 500."""
+    url = "https://planetarynames.wr.usgs.gov/SearchResults"
+    respx.get(url).mock(return_value=httpx.Response(500, text="method not allowed"))
+    posted = respx.post(url).mock(
+        return_value=httpx.Response(200, html="<html><table>results</table></html>")
+    )
+    target = DownloadTarget(
+        filename="nomenclature.html",
+        url=url,
+        method="POST",
+        data={"Target": "", "Feature Type": ""},
+        media_type="text/html",
+    )
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        result = await linkcheck.check_link(client, "usgs_gazetteer", target)
+    assert posted.called
+    assert result.works is True
+
+
+@respx.mock
+async def test_a_permalink_redirecting_to_the_real_file_is_fine():
+    """ucs.org/media/11492 -> the actual .xlsx is a normal permalink."""
+    permalink = "https://www.ucs.org/media/11492"
+    real_file = "https://www.ucs.org/sites/default/files/UCS-Satellite-Database.xlsx"
+    respx.get(permalink).mock(
+        return_value=httpx.Response(302, headers={"location": real_file})
+    )
+    respx.get(real_file).mock(return_value=httpx.Response(200, content=b"PK\x03\x04binary"))
+    target = DownloadTarget(
+        filename="UCS-Satellite-Database.xlsx", url=permalink, media_type="application/zip"
+    )
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        result = await linkcheck.check_link(client, "ucs_satellite_db", target)
+    assert result.works is True
+    assert result.redirected_offsite is False
+    assert "redirected to" in result.detail
+
+
+@respx.mock
+async def test_a_path_redirect_that_also_fails_content_is_still_caught():
+    """The landing-page pattern: path thrown away *and* not the promised data."""
+    asked = "https://example.test/data/catalog.csv"
+    landing = "https://example.test/status"
+    respx.get(asked).mock(return_value=httpx.Response(307, headers={"location": landing}))
+    respx.get(landing).mock(return_value=httpx.Response(200, html="<html>moved</html>"))
+    target = DownloadTarget(filename="catalog.csv", url=asked, media_type="text/csv")
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        result = await linkcheck.check_link(client, "x", target)
+    assert result.works is False
+    assert "different path" in result.detail
+
+
+def test_a_retired_source_is_reported_from_the_registry():
+    """`nssdc` is marked retired in links.py; the verdict must say so."""
+    report = _report(key="nssdc_planetary_factsheet", has_plan=False)
+    report.links = [linkcheck.LinkResult("k", "GET", "u", "u", ok=True, content_ok=True)]
+    verdict, reason = linkcheck._verdict_for(report)
+    assert verdict == linkcheck.VERDICT_BROKEN
+    assert "retired" in reason

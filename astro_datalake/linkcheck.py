@@ -13,9 +13,12 @@ when all of the following hold:
    expects to parse (JSON parses, CSV has a delimited header row, gzip has
    its magic number, HTML has markup, TLE has 69-character element lines).
 
-Only a small prefix of each body is read — heavy queries are checked through
-their declared `check_url` twin (a TAP `top 5`, an SBDB `limit=5`) — so
-verifying every link costs kilobytes, not gigabytes.
+Only a small prefix of each body is read, so verifying every link costs
+kilobytes, not gigabytes.
+
+The targets come from `sources/links.py` — the same data `downloaders.py`,
+`astro manifest` and the Cloudflare frontend consume — so what gets verified
+here is exactly what everything else will fetch.
 """
 
 from __future__ import annotations
@@ -25,12 +28,13 @@ import json
 import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
 import httpx
 
 from .core.config import settings
-from .downloaders import DOWNLOAD_PLAN, SPACETRACK_REQUESTS, DeclaredRequest, declared_requests
+from .downloaders import DOWNLOAD_PLAN, unfetchable_reason
+from .sources.links import LINKS, DownloadTarget, LinkStatus
 from .sources.registry import SOURCES
 
 #: Bytes of body read before we stop and judge the content.
@@ -126,8 +130,30 @@ class SourceReport:
 # ---------------------------------------------------------------------------
 # Content sniffing
 # ---------------------------------------------------------------------------
-def expected_kind_for(url: str) -> str:
-    """Guess what a URL is supposed to return, from its path and query."""
+#: media_type from the link registry -> the sniffer's format name.
+_MEDIA_TYPE_KINDS = {
+    "application/json": "json",
+    "text/csv": "csv",
+    "text/plain": "text",
+    "text/html": "html",
+    "application/xml": "xml",
+    "text/xml": "xml",
+    "application/gzip": "gzip",
+    "application/zip": "gzip",
+    "application/x-gzip": "gzip",
+}
+
+
+def expected_kind_for(url: str, media_type: str | None = None) -> str:
+    """What a URL should return, from the registry's media_type or the URL.
+
+    The registry is authoritative when it says something specific; the URL
+    heuristics below only cover targets that left media_type at its
+    catch-all default.
+    """
+    if media_type and media_type in _MEDIA_TYPE_KINDS:
+        return _MEDIA_TYPE_KINDS[media_type]
+
     parsed = urlparse(url)
     path = parsed.path.lower()
     query = parse_qs(parsed.query)
@@ -291,7 +317,7 @@ def _redirect_lost_the_path(requested: str, final: str) -> bool:
 async def check_link(
     client: httpx.AsyncClient,
     key: str,
-    request: DeclaredRequest,
+    target: DownloadTarget,
     timeout: float = 45.0,
     retries: int = 2,
 ) -> LinkResult:
@@ -300,7 +326,8 @@ async def check_link(
     TAP servers (VizieR especially) answer 500 under load for queries that
     work fine seconds later; one retry keeps the report about real breakage.
     """
-    result = await _check_link_once(client, key, request, timeout)
+    result = await _check_link_once(client, key, target, timeout)
+    first_detail = ""
     for attempt in range(retries):
         transient = (
             (result.http_status is None and not result.ok)
@@ -310,31 +337,47 @@ async def check_link(
         if not transient:
             break
         await asyncio.sleep(3 * (attempt + 1))
-        retry_result = await _check_link_once(client, key, request, timeout)
-        retry_result.detail = f"{retry_result.detail} (after retry; first try: {result.detail})"
+        first_detail = first_detail or result.detail
+        retry_result = await _check_link_once(client, key, target, timeout)
+        attempts = attempt + 1
+        plural = "retry" if attempts == 1 else "retries"
+        if retry_result.works:
+            retry_result.detail = (
+                f"{retry_result.detail} (recovered after {attempts} {plural}; "
+                f"first try: {first_detail})"
+            )
+        else:
+            retry_result.detail = (
+                f"{retry_result.detail} (still failing after {attempts} {plural}; "
+                f"first try: {first_detail})"
+            )
         result = retry_result
     return result
 
 
 async def _check_link_once(
-    client: httpx.AsyncClient, key: str, request: DeclaredRequest, timeout: float = 45.0
+    client: httpx.AsyncClient, key: str, target: DownloadTarget, timeout: float = 45.0
 ) -> LinkResult:
-    url = request.probe_url
+    url = _check_url_for(target)
     result = LinkResult(
         key=key,
-        method=request.method,
-        url=request.url,
+        method=target.method,
+        url=target.resolved_url,
         checked_url=url,
-        expected_kind=expected_kind_for(url),
+        expected_kind=expected_kind_for(url, target.media_type),
     )
     started = asyncio.get_event_loop().time()
+    headers = {"Range": f"bytes=0-{SAMPLE_BYTES - 1}"}
+    headers.update(target.headers)
+    # Use the target's real method. GETting a POST-only search form (the USGS
+    # Gazetteer) gets a 500 that says nothing about the link. The one method
+    # we never replay is Space-Track's login POST — that is credentialed and
+    # is checked through its query endpoints answering 401 instead.
+    stream_kwargs: dict = {"timeout": timeout, "headers": headers}
+    if target.method == "POST" and target.data:
+        stream_kwargs["data"] = dict(target.data)
     try:
-        # Space-Track's login is a POST we must not actually perform without
-        # credentials; a GET tells us the endpoint is up without logging in.
-        method = "GET"
-        async with client.stream(
-            method, url, timeout=timeout, headers={"Range": f"bytes=0-{SAMPLE_BYTES - 1}"}
-        ) as response:
+        async with client.stream(target.method, url, **stream_kwargs) as response:
             result.http_status = response.status_code
             result.ok = response.status_code < 400
             result.final_url = str(response.url)
@@ -360,9 +403,9 @@ async def _check_link_once(
         final_url = result.final_url or url
         requested_host = _canonical_host(urlparse(url).netloc)
         final_host = _canonical_host(urlparse(final_url).netloc)
-        result.redirected_offsite = requested_host != final_host or _redirect_lost_the_path(
-            url, final_url
-        )
+        offsite = requested_host != final_host
+        lost_path = _redirect_lost_the_path(url, final_url)
+        result.redirected_offsite = offsite
 
         if result.http_status in AUTH_STATUSES:
             result.auth_required = True
@@ -373,14 +416,22 @@ async def _check_link_once(
             result.detail = f"HTTP {result.http_status}" + (f" — {reason}" if reason else "")
             result.server_side_failure = looks_server_side(result.detail, result.http_status)
             return result
-        if result.redirected_offsite:
-            where = "off-site" if requested_host != final_host else "to a different path"
-            result.detail = f"redirects {where}: {final_url}"
+        if offsite:
+            result.detail = f"redirects off-site: {final_url}"
             return result
 
         result.content_ok, result.detail = sniff_content(
             result.expected_kind, bytes(sample), complete
         )
+        if lost_path:
+            # A permalink resolving to the real file (ucs.org/media/11492 ->
+            # UCS-Satellite-Database.xlsx) is normal; a landing-page redirect
+            # that also fails the content check is not.
+            if result.content_ok is False:
+                result.redirected_offsite = True
+                result.detail = f"redirects to a different path: {final_url} — {result.detail}"
+            else:
+                result.detail = f"{result.detail} (redirected to {final_url})"
     except Exception as exc:  # noqa: BLE001 - any failure is a link-check finding
         result.elapsed_seconds = round(asyncio.get_event_loop().time() - started, 2)
         result.ok = False
@@ -389,19 +440,59 @@ async def _check_link_once(
     return result
 
 
-def _requests_for(key: str) -> list[DeclaredRequest]:
-    if key == "spacetrack":
-        return SPACETRACK_REQUESTS
-    requests = declared_requests(key)
-    if requests:
-        return requests
+#: Row caps injected when checking a target, so verifying a link never pulls
+#: the whole catalogue behind it. Keyed by the query parameter the API uses.
+_CHECK_CAPS = {"MAXREC": "5", "maxrec": "5", "limit": "5"}
+
+
+def _check_url_for(target: DownloadTarget) -> str:
+    """A deliberately tiny twin of `target`, for link-checking only."""
+    params = dict(target.params)
+    if not params:
+        return target.url
+
+    for key in ("query", "QUERY"):
+        if key in params:
+            # ADQL: a `top 5` costs the server almost nothing and proves the
+            # table resolves, which is the thing that actually breaks.
+            value = params[key]
+            lowered = value.lstrip().lower()
+            if lowered.startswith("select") and " top " not in lowered[:40]:
+                params[key] = value.replace("select", "select top 5", 1)
+    for cap, value in _CHECK_CAPS.items():
+        if cap in params:
+            params[cap] = value
+    if "sb-class" in params:
+        params["limit"] = "5"
+
+    sep = "&" if "?" in target.url else "?"
+    return f"{target.url}{sep}{urlencode(params)}"
+
+
+def _requests_for(key: str) -> list[DownloadTarget]:
+    links = LINKS.get(key)
+    if links is not None and links.targets:
+        return list(links.targets)
+    if links is not None and links.landing_page:
+        # Retired/credentialed sources with no target still have somewhere
+        # worth pinging, so the report can say "alive but gated" rather than
+        # staying silent about them.
+        return [DownloadTarget(filename="landing", url=links.landing_page)]
     spec = SOURCES[key]
-    return [DeclaredRequest(spec.probe_method, spec.probe_url)]
+    return [DownloadTarget(filename="probe", url=spec.probe_url, method=spec.probe_method)]
 
 
 def _verdict_for(report: SourceReport) -> tuple[str, str]:
     broken = [link for link in report.links if not link.works]
-    if report.requires_credentials:
+    links = LINKS.get(report.key)
+
+    if links is not None and links.status is LinkStatus.RETIRED:
+        replacement = f" — use {links.replaced_by} instead" if links.replaced_by else ""
+        return VERDICT_BROKEN, f"endpoint retired{replacement}"
+
+    if report.requires_credentials or (
+        links is not None and links.status is LinkStatus.CREDENTIALED
+    ):
         reachable = any(link.ok or link.auth_required for link in report.links)
         if not reachable:
             return VERDICT_BROKEN, "endpoint unreachable"
@@ -418,7 +509,8 @@ def _verdict_for(report: SourceReport) -> tuple[str, str]:
             return VERDICT_SUSPECT, f"server-side outage: {broken[0].detail}"
         if broken:
             return VERDICT_BROKEN, broken[0].detail
-        return VERDICT_NO_PLAN, "endpoint reachable but no downloader (see registry notes)"
+        reason = unfetchable_reason(report.key) or "no downloader"
+        return VERDICT_NO_PLAN, f"endpoint reachable but not fetchable: {reason}"
     if not broken:
         return VERDICT_READY, f"{len(report.links)} link(s) verified"
     if all(link.server_side_failure for link in broken):

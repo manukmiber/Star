@@ -1,0 +1,285 @@
+{
+  "generated": "2026-08-21",
+  "note_en": "Curated set of 3D models with verified, working direct-download links from official space agency sources (NASA, ESA, JAXA). Not every model in NASA's full ~378-item 3D Resources catalog is listed here — see 'more' links per category to browse the rest.",
+  "note_id": "Kumpulan model 3D pilihan dengan link download langsung yang sudah diverifikasi dari sumber resmi badan antariksa (NASA, ESA, JAXA). Bukan seluruh ~378 model di katalog 3D Resources NASA dimasukkan di sini — lihat link 'more' di tiap kategori untuk menjelajah sisanya.",
+  "categories": [
+    { "id": "satellite", "label_id": "Satelit / Wahana Antariksa Buatan Manusia", "label_en": "Artificial Satellites / Spacecraft" },
+    { "id": "comet", "label_id": "Komet", "label_en": "Comets" },
+    { "id": "asteroid", "label_id": "Asteroid", "label_en": "Asteroids" },
+    { "id": "star", "label_id": "Bintang", "label_en": "Stars" }
+  ],
+  "items": [
+    {
+      "id": "hubble",
+      "name": "Hubble Space Telescope",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Teleskop luar angkasa NASA/ESA yang mengorbit Bumi sejak 1990.",
+      "source_page": "https://science.nasa.gov/resource/hubble-space-telescope-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/h/Hubble.glb", "size_mb": 10.93 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/h/Hubble.usdz", "size_mb": 2.26 }
+      ]
+    },
+    {
+      "id": "jwst",
+      "name": "James Webb Space Telescope",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Teleskop inframerah generasi terbaru, beroperasi di titik Lagrange L2.",
+      "source_page": "https://science.nasa.gov/3d-resources/james-webb-space-telescope-a/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/cds/3d/resources/model/james-webb-space-telescope-(a)/James%20Webb%20Space%20Telescope%20(A).glb", "size_mb": 4.49 },
+        { "format": "zip", "url": "https://assets.science.nasa.gov/content/dam/science/cds/3d/resources/model/james-webb-space-telescope-(a)/James%20Webb%20Space%20Telescope%20(A).zip", "size_mb": 112.37, "note_id": "Arsip berisi file Maya (.mb) sumber" }
+      ]
+    },
+    {
+      "id": "iss",
+      "name": "International Space Station (ISS)",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Stasiun luar angkasa multinasional yang mengorbit Bumi sejak 1998.",
+      "source_page": "https://science.nasa.gov/resource/international-space-station-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/i/ISS_stationary.glb", "size_mb": 42.43 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/i/ISS_stationary.usdz", "size_mb": 15.97 }
+      ]
+    },
+    {
+      "id": "voyager",
+      "name": "Voyager 1 / 2",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Wahana kembar yang diluncurkan 1977, kini di ruang antarbintang.",
+      "source_page": "https://science.nasa.gov/resource/voyager-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/v/Voyager.glb", "size_mb": 2.98 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/v/Voyager.usdz", "size_mb": 1.17 }
+      ]
+    },
+    {
+      "id": "juno",
+      "name": "Juno",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Wahana yang mengorbit dan meneliti Jupiter sejak 2016.",
+      "source_page": "https://science.nasa.gov/resource/juno-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/j/Juno.glb", "size_mb": 8.76 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/j/Juno.usdz", "size_mb": 4.30 }
+      ]
+    },
+    {
+      "id": "cassini",
+      "name": "Cassini",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Wahana yang mengorbit dan meneliti Saturnus 2004–2017.",
+      "source_page": "https://science.nasa.gov/resource/cassini-3-d-printer-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "stl", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/c/cassini.stl", "size_mb": 1.23 },
+        { "format": "zip (blender)", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/j/jpl-vtad-Cassini.zip", "size_mb": 5.54 }
+      ]
+    },
+    {
+      "id": "parker-solar-probe",
+      "name": "Parker Solar Probe",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Wahana yang terbang paling dekat ke Matahari, diluncurkan 2018.",
+      "source_page": "https://science.nasa.gov/resource/parker-solar-probe-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/p/s/PSP.glb", "size_mb": 6.29 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/p/s/PSP.usdz", "size_mb": 2.25 },
+        { "format": "stl", "url": "https://science.nasa.gov/wp-content/uploads/2019/04/psp-3dprint.stl", "size_mb": 1.19 }
+      ]
+    },
+    {
+      "id": "new-horizons",
+      "name": "New Horizons",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Wahana yang terbang lintas Pluto (2015) dan Arrokoth (2019).",
+      "source_page": "https://science.nasa.gov/resource/new-horizons-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/n/New_Horizons.glb", "size_mb": 3.14 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/n/New_Horizons.usdz", "size_mb": 0.74 }
+      ]
+    },
+    {
+      "id": "osiris-rex",
+      "name": "OSIRIS-REx",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Wahana pengambil sampel asteroid Bennu, kembali ke Bumi 2023.",
+      "source_page": "https://science.nasa.gov/resource/osiris-rex-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/o/Osiris_Rex.glb", "size_mb": 4.33 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/o/Osiris_Rex.usdz", "size_mb": 1.44 }
+      ]
+    },
+    {
+      "id": "spitzer",
+      "name": "Spitzer Space Telescope",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Salah satu dari empat 'Great Observatories' NASA, pengamat inframerah.",
+      "source_page": "https://science.nasa.gov/resource/spitzer-space-telescope-3d-model-2/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/astro/exo-explore/2023/09/SPITZER-1.glb", "size_mb": 5.30 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/astro/exo-explore/2023/09/SPITZER-1.usdz", "size_mb": 1.23 }
+      ]
+    },
+    {
+      "id": "chandra",
+      "name": "Chandra X-ray Observatory",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Teleskop luar angkasa sinar-X, salah satu 'Great Observatories' NASA.",
+      "source_page": "https://science.nasa.gov/3d-resources/chandra-x-ray-observatory/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/cds/3d/resources/model/chandra-x-ray-observatory/Chandra%20X-ray%20Observatory.glb", "size_mb": 0.95 }
+      ]
+    },
+    {
+      "id": "curiosity",
+      "name": "Curiosity (Mars Rover)",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Rover Mars Science Laboratory, mendarat di Mars 2012.",
+      "source_page": "https://science.nasa.gov/resource/curiosity-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/c/Curiosity_static.glb", "size_mb": 11.31 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/c/Curiosity_static.usdz", "size_mb": 4.44 }
+      ]
+    },
+    {
+      "id": "perseverance",
+      "name": "Perseverance (Mars Rover)",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Rover Mars 2020, mendarat di kawah Jezero Februari 2021.",
+      "source_page": "https://science.nasa.gov/resource/mars-perseverance-rover-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/gltf_files/25042_Perseverance.glb", "size_mb": 11.15 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/usdz_files/25042_Perseverance.usdz", "size_mb": 12.70 }
+      ]
+    },
+    {
+      "id": "insight",
+      "name": "InSight Lander",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Lander Mars untuk penelitian seismik, aktif 2018–2022.",
+      "source_page": "https://science.nasa.gov/resource/insight-lander-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/gltf_files/24880_InSight_deployed.glb", "size_mb": 21.32 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/mars/resources/usdz_files/24880_InSight_deployed.usdz", "size_mb": 9.87 }
+      ]
+    },
+    {
+      "id": "explorer-1",
+      "name": "Explorer 1",
+      "category": "satellite",
+      "agency": "NASA",
+      "summary_id": "Satelit buatan pertama Amerika Serikat, diluncurkan 1958.",
+      "source_page": "https://science.nasa.gov/resource/explorer-1-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/e/Explorer_1.glb", "size_mb": 0.83 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/e/Explorer_1.usdz", "size_mb": 0.36 }
+      ]
+    },
+    {
+      "id": "comet-67p",
+      "name": "Komet 67P/Churyumov–Gerasimenko",
+      "category": "comet",
+      "agency": "ESA",
+      "summary_id": "Model bentuk (shape model) dari kamera OSIRIS wahana Rosetta ESA.",
+      "source_page": "https://sci.esa.int/web/rosetta/-/54728-shape-model-of-comet-67p",
+      "license": "ESA — wajib atribusi: Credits: ESA/Rosetta/MPS for OSIRIS Team MPS/UPD/LAM/IAA/SSO/INTA/UPM/DASP/IDA",
+      "notes_id": "Model bentuk geometris murni (mesh), tanpa tekstur foto — hasil rekonstruksi ilmiah, bukan render artistik.",
+      "files": [
+        { "format": "obj", "url": "https://sci.esa.int/science-e/www/object/doc.cfm?fobjectid=54726" },
+        { "format": "wrl", "url": "https://sci.esa.int/science-e/www/object/doc.cfm?fobjectid=54727" }
+      ]
+    },
+    {
+      "id": "eros",
+      "name": "433 Eros",
+      "category": "asteroid",
+      "agency": "NASA",
+      "summary_id": "Asteroid dekat-Bumi, target misi NEAR Shoemaker (2000–2001).",
+      "source_page": "https://science.nasa.gov/resource/eros-3d-model/",
+      "license": "Public domain (NASA)",
+      "files": [
+        { "format": "glb", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/e/Eros_1_10.glb", "size_mb": 2.28 },
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/e/Eros_1_10.usdz", "size_mb": 0.50 }
+      ]
+    },
+    {
+      "id": "bennu",
+      "name": "101955 Bennu",
+      "category": "asteroid",
+      "agency": "NASA",
+      "summary_id": "Asteroid target misi OSIRIS-REx, sampel dikembalikan ke Bumi 2023.",
+      "source_page": "https://www.asteroidmission.org/updated-bennu-shape-model-3d-files/",
+      "license": "Public domain (NASA/University of Arizona, OSIRIS-REx mission)",
+      "notes_id": "Model bentuk geometris murni (mesh), tanpa tekstur foto.",
+      "files": [
+        { "format": "obj", "label": "75cm resolution (Mar 2019)", "url": "https://www.asteroidmission.org/wp-content/uploads/2019/03/Bennu_v20_200k.obj" },
+        { "format": "stl", "label": "75cm resolution (Mar 2019)", "url": "https://www.asteroidmission.org/wp-content/uploads/2019/03/Bennu_v20_200k.stl" },
+        { "format": "obj", "label": "Post-TAG digital terrain model", "url": "https://www.asteroidmission.org/wp-content/uploads/2022/09/Bennu-Post-TAG-DTM.obj" },
+        { "format": "stl", "label": "Post-TAG digital terrain model", "url": "https://www.asteroidmission.org/wp-content/uploads/2022/09/Bennu-Post-TAG-DTM.stl" }
+      ]
+    },
+    {
+      "id": "ryugu",
+      "name": "162173 Ryugu",
+      "category": "asteroid",
+      "agency": "JAXA",
+      "summary_id": "Asteroid target misi Hayabusa2 (JAXA), sampel dikembalikan ke Bumi 2020.",
+      "source_page": "https://data.darts.isas.jaxa.jp/pub/hayabusa2/paper/Watanabe_2019/README.html",
+      "license": "JAXA/ISAS — wajib atribusi (lihat README di source_page)",
+      "notes_id": "Model bentuk geometris murni (mesh), tanpa tekstur foto. Tersedia beberapa resolusi.",
+      "files": [
+        { "format": "obj", "label": "3M polygon (highest detail)", "url": "https://data.darts.isas.jaxa.jp/pub/hayabusa2/paper/Watanabe_2019/SHAPE_SFM_3M_v20180804.obj" },
+        { "format": "obj", "label": "800k polygon", "url": "https://data.darts.isas.jaxa.jp/pub/hayabusa2/paper/Watanabe_2019/SHAPE_SFM_800k_v20180804.obj" },
+        { "format": "obj", "label": "200k polygon", "url": "https://data.darts.isas.jaxa.jp/pub/hayabusa2/paper/Watanabe_2019/SHAPE_SFM_200k_v20180804.obj" },
+        { "format": "obj", "label": "49k polygon (lightest)", "url": "https://data.darts.isas.jaxa.jp/pub/hayabusa2/paper/Watanabe_2019/SHAPE_SFM_49k_v20180804.obj" }
+      ]
+    },
+    {
+      "id": "sun",
+      "name": "Matahari (The Sun)",
+      "category": "star",
+      "agency": "NASA",
+      "summary_id": "Model bola bertekstur permukaan Matahari (foto sungguhan, bukan ilustrasi).",
+      "source_page": "https://science.nasa.gov/learn/heat/resource/sun-3d-model/",
+      "license": "Public domain (NASA)",
+      "notes_id": "Bintang lain (selain Matahari) belum punya 'model 3D' nyata karena secara fisik masih berupa titik cahaya tak-teratasi (unresolved) bahkan di teleskop terbaik — jadi tidak ada shape model ilmiah untuk bintang selain Matahari.",
+      "files": [
+        { "format": "usdz", "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/s/Sun_1_1391000.usdz", "size_mb": 0.97 }
+      ]
+    }
+  ],
+  "more_links": [
+    { "label_id": "Jelajahi seluruh katalog 3D Resources NASA (~378 model)", "url": "https://science.nasa.gov/3d-resources/" },
+    { "label_id": "Katalog shape model asteroid & komet lainnya (3D Asteroid Catalogue)", "url": "https://3d-asteroids.space/" },
+    { "label_id": "Model interaktif Rosetta (tanpa file download langsung)", "url": "https://sci.esa.int/web/rosetta/-/31389-3d-model" }
+  ]
+}

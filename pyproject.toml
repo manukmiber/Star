@@ -20,6 +20,7 @@ dependencies = [
 # for Termux's bionic libc, where it compiles from Rust source — hence opt-in.
 build = [
     "polars>=1.6",
+    "numpy>=1.26",
     "beautifulsoup4>=4.12",
     "jsonschema>=4.22",
 ]

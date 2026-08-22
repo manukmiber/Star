@@ -17,12 +17,17 @@ from .config import on_termux
 #: module name -> (pip extra it belongs to, what it's needed for)
 OPTIONAL_MODULES: dict[str, tuple[str, str]] = {
     "polars": ("build", "membaca/menulis tabel saat `astro build`"),
+    "numpy": ("build", "perhitungan crossmatch/orbit saat `astro build`"),
     "bs4": ("build", "mem-parse tabel HTML JPL saat `astro build`"),
     "jsonschema": ("build", "validasi JSON-schema saat `astro verify`"),
     "textual": ("", "TUI (`astro tui`)"),
 }
 
 TERMUX_HINTS = {
+    "numpy": (
+        "Di Termux pakai `pkg install python-numpy` (ada paket siap pakai), "
+        "jangan `pip install numpy` yang akan mengompilasi dari sumber."
+    ),
     "polars": (
         "Di Termux polars tidak punya wheel siap pakai; pasang lewat "
         "`pkg install rust binutils && pip install polars` (butuh waktu & ruang), "

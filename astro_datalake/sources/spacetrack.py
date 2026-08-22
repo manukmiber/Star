@@ -47,6 +47,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
+from urllib.parse import urlparse
 
 import httpx
 
@@ -435,6 +436,21 @@ class RetrievalLedger:
 # ---------------------------------------------------------------------------
 # Client
 # ---------------------------------------------------------------------------
+def class_name_from_url(url: str) -> str:
+    """Pull the API class out of a Space-Track query URL.
+
+    `.../basicspacedata/query/class/gp/orderby/.../format/json` -> `gp`.
+    Lets the retrieval-rate ledger work off the URLs in sources/links.py
+    without those URLs having to be rebuilt as Query objects.
+    """
+    parts = [segment for segment in urlparse(url).path.split("/") if segment]
+    if "class" in parts:
+        index = parts.index("class")
+        if index + 1 < len(parts):
+            return parts[index + 1].lower()
+    return "unknown"
+
+
 def credentials_from_env() -> tuple[str, str] | None:
     identity = os.environ.get(ENV_IDENTITY)
     password = os.environ.get(ENV_PASSWORD)
@@ -562,6 +578,22 @@ class SpaceTrackClient:
     async def query(self, spec: Query) -> httpx.Response:
         await self.login()
         return await self._request(spec.url(self.base_url))
+
+    async def request_url(self, url: str, *, timeout: float | None = None) -> httpx.Response:
+        """Fetch an already-built Space-Track URL through the same session.
+
+        Used for the URLs that live in sources/links.py, so they still get
+        the login, the throttle and the error handling without being
+        round-tripped through Query.
+        """
+        await self.login()
+        if timeout is not None:
+            previous, self.timeout = self.timeout, timeout
+            try:
+                return await self._request(url)
+            finally:
+                self.timeout = previous
+        return await self._request(url)
 
     async def query_json(self, spec: Query) -> Any:
         if spec.response_format != "json":
