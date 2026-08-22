@@ -354,3 +354,69 @@ def test_a_retired_source_is_reported_from_the_registry():
     verdict, reason = linkcheck._verdict_for(report)
     assert verdict == linkcheck.VERDICT_BROKEN
     assert "retired" in reason
+
+
+# --- sampling chunked targets ----------------------------------------------
+def _chunk(i: int) -> DownloadTarget:
+    return DownloadTarget(
+        filename=f"chunk-{i}.csv",
+        url="https://gea.esac.esa.int/tap-server/tap/sync",
+        params={"QUERY": f"select * from g where random_index between {i} and {i + 10}",
+                "FORMAT": "csv"},
+    )
+
+
+def test_a_long_run_of_identical_chunks_is_sampled():
+    targets = [_chunk(i) for i in range(182)]
+    chosen, total = linkcheck.sample_targets(targets)
+    assert total == 182
+    assert len(chosen) == linkcheck.CHUNK_SAMPLE_SIZE
+    # Both ends are exercised, not just the front of the list.
+    assert chosen[0] is targets[0]
+    assert chosen[-1] is targets[-1]
+
+
+def test_distinct_requests_are_never_sampled():
+    """jpl_horizons' bodies and sbdb's orbit classes can break one at a time."""
+    targets = [
+        DownloadTarget(filename=f"{n}.json", url=f"https://ssd.jpl.nasa.gov/api/{n}")
+        for n in ("sun", "mercury", "venus", "earth", "mars", "jupiter",
+                  "saturn", "uranus", "neptune", "pluto")
+    ]
+    chosen, total = linkcheck.sample_targets(targets)
+    assert len(chosen) == total == 10
+
+
+def test_differing_param_names_defeat_chunk_detection():
+    targets = [_chunk(i) for i in range(30)]
+    targets[5] = DownloadTarget(
+        filename="odd.csv", url=targets[0].url, params={"QUERY": "x", "EXTRA": "1"}
+    )
+    assert linkcheck.are_generated_chunks(targets) is False
+    chosen, total = linkcheck.sample_targets(targets)
+    assert len(chosen) == total
+
+
+def test_full_disables_sampling():
+    targets = [_chunk(i) for i in range(182)]
+    chosen, total = linkcheck.sample_targets(targets, full=True)
+    assert len(chosen) == total == 182
+
+
+def test_the_real_gaia_source_is_the_only_one_sampled():
+    from astro_datalake.sources.registry import SOURCES
+
+    sampled = {
+        key
+        for key in SOURCES
+        if len(linkcheck.sample_targets(linkcheck._requests_for(key))[0])
+        < linkcheck.sample_targets(linkcheck._requests_for(key))[1]
+    }
+    assert sampled == {"gaia_dr3_tap"}
+
+
+def test_a_sampled_report_says_so():
+    report = _report(key="gaia_dr3_tap")
+    report.links = [linkcheck.LinkResult("k", "GET", "u", "u", ok=True, content_ok=True)]
+    report.total_targets = 182
+    assert report.sampled is True

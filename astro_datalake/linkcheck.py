@@ -40,6 +40,17 @@ from .sources.registry import SOURCES
 #: Bytes of body read before we stop and judge the content.
 SAMPLE_BYTES = 32 * 1024
 
+#: Sampling only ever applies to a large set of *generated chunks* — the same
+#: endpoint and the same parameter shape, differing only in the slice they
+#: ask for. gaia_dr3_tap is 182 of those (one ADQL query cut by
+#: `random_index`), where checking every slice costs minutes and tells us
+#: nothing the ends and middle don't. Sources whose targets are genuinely
+#: different requests — jpl_horizons' ten bodies, sbdb_query_full's eleven
+#: orbit classes — are always checked in full, however many there are.
+#: The threshold sits well above those so they can never be caught by it.
+CHUNK_SAMPLE_THRESHOLD = 20
+CHUNK_SAMPLE_SIZE = 4
+
 # Verdicts, worst-first for reporting purposes.
 VERDICT_READY = "ready"
 VERDICT_NEEDS_CREDENTIALS = "needs-credentials"
@@ -121,6 +132,12 @@ class SourceReport:
     links: list[LinkResult] = field(default_factory=list)
     verdict: str = VERDICT_NO_PLAN
     reason: str = ""
+    #: Total targets this source has, when only a sample was checked.
+    total_targets: int | None = None
+
+    @property
+    def sampled(self) -> bool:
+        return self.total_targets is not None and self.total_targets > len(self.links)
 
     @property
     def working_links(self) -> int:
@@ -469,6 +486,39 @@ def _check_url_for(target: DownloadTarget) -> str:
     return f"{target.url}{sep}{urlencode(params)}"
 
 
+def are_generated_chunks(targets: list[DownloadTarget]) -> bool:
+    """True when these targets are one request repeated over slices.
+
+    Same URL, same method, same parameter names, same headers — only the
+    values differ. That is what a chunked catalogue pull looks like, and it
+    is the only case where checking a spread stands in for checking all.
+    """
+    if len(targets) < 2:
+        return False
+    first = targets[0]
+    shape = (first.url, first.method, frozenset(first.params), frozenset(first.headers))
+    return all(
+        (t.url, t.method, frozenset(t.params), frozenset(t.headers)) == shape for t in targets
+    )
+
+
+def sample_targets(
+    targets: list[DownloadTarget], *, full: bool = False
+) -> tuple[list[DownloadTarget], int]:
+    """Pick which targets to actually check. Returns (chosen, total).
+
+    Only a large set of generated chunks is sampled — see
+    CHUNK_SAMPLE_THRESHOLD. Everything else is checked in full, because a
+    list of distinct requests can break one at a time.
+    """
+    total = len(targets)
+    if full or total <= CHUNK_SAMPLE_THRESHOLD or not are_generated_chunks(targets):
+        return targets, total
+    step = (total - 1) / (CHUNK_SAMPLE_SIZE - 1)
+    indices = sorted({round(i * step) for i in range(CHUNK_SAMPLE_SIZE)})
+    return [targets[i] for i in indices], total
+
+
 def _requests_for(key: str) -> list[DownloadTarget]:
     links = LINKS.get(key)
     if links is not None and links.targets:
@@ -528,6 +578,7 @@ async def check_sources(
     *,
     concurrency: int = 4,
     progress: object = None,
+    full: bool = False,
 ) -> list[SourceReport]:
     """Check every declared download link for `keys` (default: all sources)."""
     keys = keys or sorted(SOURCES)
@@ -547,10 +598,16 @@ async def check_sources(
                 requires_credentials=spec.requires_credentials,
                 has_plan=DOWNLOAD_PLAN.get(key) is not None,
             )
+            chosen, total = sample_targets(_requests_for(key), full=full)
+            report.total_targets = total
             async with semaphore:
-                for request in _requests_for(key):
-                    report.links.append(await check_link(client, key, request))
+                for target in chosen:
+                    report.links.append(await check_link(client, key, target))
             report.verdict, report.reason = _verdict_for(report)
+            if report.sampled:
+                report.reason = (
+                    f"{report.reason} (sampled {len(report.links)} of {total} chunked targets)"
+                )
             if progress is not None and callable(progress):
                 progress(report)
             return report
@@ -605,4 +662,8 @@ def summarize(reports: list[SourceReport]) -> dict[str, int]:
         counts[report.verdict] = counts.get(report.verdict, 0) + 1
     counts["links_checked"] = sum(len(report.links) for report in reports)
     counts["links_working"] = sum(report.working_links for report in reports)
+    counts["targets_total"] = sum(
+        report.total_targets if report.total_targets is not None else len(report.links)
+        for report in reports
+    )
     return counts

@@ -52,11 +52,16 @@ def links(
     tier: int = typer.Option(None, "--tier", help="Restrict to a tier: 1, 2, or 3.", min=1, max=3),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show every URL checked."),
     concurrency: int = typer.Option(4, "--concurrency", "-j", help="Parallel sources.", min=1, max=16),
+    full: bool = typer.Option(
+        False, "--full", help="Check every chunked target instead of a spread sample."
+    ),
 ) -> None:
     """Test every download link and report which sources are ready to pull."""
     from .commands import links as links_cmd
 
-    links_cmd.run(source=source, tier=tier, verbose=verbose, concurrency=concurrency)
+    links_cmd.run(
+        source=source, tier=tier, verbose=verbose, concurrency=concurrency, full=full
+    )
 
 
 def _require_optional(*modules: str) -> None:

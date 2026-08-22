@@ -54,7 +54,7 @@ calls `DOWNLOAD_PLAN` and `linkcheck` directly, so the two can't drift apart.
 
 ```
 ┌ Sumber ┬ Link ┬ Space-Track ┬ Log ┐
-│ 46 sources, tier/status/link-verdict/size, live filter and tier picker    │
+│ 52 sources, tier/status/link-verdict/size, live filter and tier picker    │
 │ detail pane shows the exact HTTP requests that source will issue          │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
@@ -91,12 +91,28 @@ Failures are split by fault. A 5xx, a timeout, or a message like CDS's
 answer fine minutes later. Only a genuine 404, a bad redirect, or wrong
 content is called broken.
 
-Heavy sources are checked through a cheap twin of the real request (a TAP
-`top 5`, an SBDB `limit=5`, a Space-Track `limit/1`), and only the first
-32 KB of any body is read, so verifying all 74 links costs kilobytes.
+Targets come from `sources/links.py`, so what gets verified is exactly what
+`astro pull`, `astro manifest` and the website will fetch. Each check uses a
+cheap twin derived from the target's own parameters — an ADQL `top 5`, a
+`MAXREC`/`limit` cap — and reads at most 32 KB of the body, so a full run
+costs kilobytes rather than gigabytes. POST targets are checked with POST
+(the USGS Gazetteer is a POST-only search form; GETting it just returns 500).
+
+`gaia_dr3_tap` is 182 targets that are one ADQL query sliced by
+`random_index`; those are checked as a spread of four rather than all 182,
+and the report says so. Sources whose targets are genuinely different
+requests — `jpl_horizons`' ten bodies, `sbdb_query_full`'s eleven orbit
+classes — are always checked in full. `--full` checks everything.
+
 Results land in `data/_catalog/link-check.json`, merged rather than
 overwritten so checking one source doesn't discard what's known about the
 rest.
+
+Latest full run (2026-08-22, 52 sources / 276 registered targets, 98
+checked): **47 ready to download**, 3 hitting the intermittent CDS/VizieR
+TAP outage, 1 retired (`nssdc_planetary_factsheet`, superseded by
+`le_systeme_solaire` + `jpl_horizons`), and 1 behind a credential wall
+(Space-Track).
 
 ## Space-Track
 

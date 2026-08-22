@@ -37,6 +37,7 @@ def run(
     tier: int | None = None,
     verbose: bool = False,
     concurrency: int = 4,
+    full: bool = False,
 ) -> None:
     keys = sorted(SOURCES)
     if source:
@@ -60,7 +61,9 @@ def run(
             f"{VERDICT_STYLE.get(report.verdict, report.verdict)} — {report.reason}"
         )
 
-    reports = asyncio.run(check_sources(keys, concurrency=concurrency, progress=on_done))
+    reports = asyncio.run(
+        check_sources(keys, concurrency=concurrency, progress=on_done, full=full)
+    )
     reports.sort(key=lambda r: (r.tier, r.key))
 
     table = Table(title="astro links — status tiap sumber")
@@ -109,10 +112,17 @@ def run(
         f"[cyan]{counts[VERDICT_NEEDS_CREDENTIALS]} butuh kredensial[/cyan]   "
         f"[dim]{counts[VERDICT_NO_PLAN]} tanpa downloader[/dim]"
     )
+    sampled = [r for r in reports if r.sampled]
     console.print(
-        f"Link diperiksa: {counts['links_working']}/{counts['links_checked']} berfungsi.  "
-        f"Laporan: {out_path}"
+        f"Link diperiksa: {counts['links_working']}/{counts['links_checked']} berfungsi "
+        f"(dari {counts['targets_total']} target terdaftar).  Laporan: {out_path}"
     )
+    if sampled:
+        names = ", ".join(f"{r.key} ({len(r.links)}/{r.total_targets})" for r in sampled)
+        console.print(
+            f"[dim]Disampel karena target-nya potongan query yang sama: {names}. "
+            "Pakai --full untuk mengecek semuanya.[/dim]"
+        )
 
     broken = [r for r in reports if r.verdict == VERDICT_BROKEN]
     if broken:

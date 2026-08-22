@@ -32,9 +32,26 @@ Temuan nyata saat dijalankan, dan perbaikannya:
   "HTTP 400" saja tidak memberi tahu apa-apa.
 - Laporan single-source sempat menimpa laporan lengkap; sekarang di-merge.
 
-Hasil run penuh 2026-08-21 (46 sumber / 74 URL): **37 siap didownload**,
-4 kena gangguan server CDS/VizieR, 2 butuh kredensial, 2 access point tanpa
-dataset sendiri, 1 benar-benar mati (`nssdc_planetary_factsheet`).
+Dua bug lagi ketahuan setelah merge, saat checker dijalankan ke endpoint asli:
+
+- Target POST dicek pakai GET. USGS Gazetteer itu form POST-only, jadi
+  jawabannya 500 dan dilaporkan sebagai link rusak — salah kita, bukan
+  endpoint-nya. Sekarang method asli target yang dipakai.
+- Permalink yang redirect ke file aslinya (`ucs.org/media/11492` →
+  `.xlsx`) ikut kena aturan "redirect ganti path". Sekarang path yang
+  berubah hanya jadi masalah kalau cek isi juga gagal; kasus landing-page
+  yang jadi alasan aturan itu sudah ditangkap status RETIRED di registry.
+
+Selain itu `gaia_dr3_tap` punya 182 target yang isinya satu query ADQL
+dipotong per `random_index` — 66% dari seluruh target. Sekarang potongan
+seragam seperti itu dicek sebagai sampel merata (4 dari 182) dan laporannya
+menyebutkan itu; sumber yang target-nya memang beda-beda (10 benda
+`jpl_horizons`, 11 kelas `sbdb_query_full`) tetap dicek semua. `--full`
+untuk mengecek semuanya.
+
+Hasil run penuh 2026-08-22 (52 sumber / 276 target terdaftar, 98 dicek):
+**47 siap didownload**, 3 kena gangguan server CDS/VizieR yang hilang-timbul,
+1 pensiun (`nssdc_planetary_factsheet`), 1 butuh kredensial (Space-Track).
 
 ### Digabung dengan registry link dari Fase 8
 
