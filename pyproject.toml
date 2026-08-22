@@ -1,21 +1,33 @@
 [project]
 name = "astro-datalake"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local astronomical data lake: pull, normalize, and organize public astronomy data by object/system."
 readme = "README.md"
 requires-python = ">=3.11"
+
+# Core runtime: pure-Python only, so `pip install .` works on Termux/Android
+# without a compiler. Everything needing native wheels lives in an extra.
 dependencies = [
     "httpx>=0.27",
     "tenacity>=8.2",
-    "tqdm>=4.66",
-    "polars>=1.6",
-    "pandas>=2.2",
-    "pyarrow>=16.0",
-    "astropy>=6.1",
-    "astroquery>=0.4.7",
-    "pydantic>=2.7",
     "typer>=0.12",
     "rich>=13.7",
+    "textual>=0.80",
+]
+
+[project.optional-dependencies]
+# `astro build` / `astro verify`. polars ships wheels for glibc/musl but not
+# for Termux's bionic libc, where it compiles from Rust source — hence opt-in.
+build = [
+    "polars>=1.6",
+    "numpy>=1.26",
+    "beautifulsoup4>=4.12",
+    "jsonschema>=4.22",
+]
+# Termux: the pure-Python part of `build`. Pair with `pkg install python-polars`
+# (or a piwheels/`--no-binary` build) when polars itself is needed on-device.
+termux = [
+    "beautifulsoup4>=4.12",
     "jsonschema>=4.22",
 ]
 

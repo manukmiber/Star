@@ -1,0 +1,130 @@
+/* Astro Data Lake TUI styles.
+   Layout is width-aware: the summary strip collapses from six tiles to a
+   stacked column below 80 columns, which is where a phone in Termux lives. */
+
+Screen {
+    background: $surface;
+}
+
+Header {
+    background: $primary-darken-2;
+}
+
+#summary {
+    height: auto;
+    padding: 0 1;
+    background: $panel;
+    border-bottom: solid $primary-darken-3;
+    layout: horizontal;
+}
+
+.tile {
+    width: 1fr;
+    min-width: 10;
+    height: 3;
+    padding: 0 1;
+    content-align: left middle;
+}
+
+.tile-label {
+    color: $text-muted;
+    text-style: none;
+}
+
+#toolbar {
+    height: auto;
+    padding: 0 1;
+    layout: horizontal;
+    background: $panel;
+}
+
+#filter {
+    width: 1fr;
+    min-width: 16;
+}
+
+#tier-filter {
+    width: 18;
+    min-width: 12;
+}
+
+DataTable {
+    height: 1fr;
+    scrollbar-size-vertical: 1;
+}
+
+DataTable > .datatable--cursor {
+    background: $accent;
+    color: $text;
+}
+
+#detail {
+    height: auto;
+    max-height: 40%;
+    padding: 0 1;
+    background: $panel;
+    border-top: solid $primary-darken-3;
+    overflow-y: auto;
+}
+
+RichLog {
+    height: 1fr;
+    background: $surface-darken-1;
+    padding: 0 1;
+}
+
+#spacetrack-body {
+    height: 1fr;
+    padding: 1;
+}
+
+.section-title {
+    text-style: bold;
+    color: $accent;
+    padding: 1 0 0 0;
+}
+
+.hint {
+    color: $text-muted;
+}
+
+.ok { color: $success; }
+.warn { color: $warning; }
+.bad { color: $error; }
+.muted { color: $text-muted; }
+
+#progress-bar {
+    height: 1;
+    display: none;
+    padding: 0 1;
+}
+
+#progress-bar.running {
+    display: block;
+}
+
+/* Narrow terminals (a phone in Termux): stack the summary tiles and drop
+   the widest table columns rather than letting the layout smear. */
+Screen.-narrow #summary {
+    layout: vertical;
+    height: auto;
+}
+
+Screen.-narrow .tile {
+    width: 100%;
+    height: 1;
+}
+
+Screen.-narrow #toolbar {
+    layout: vertical;
+    height: auto;
+}
+
+Screen.-narrow #tier-filter,
+Screen.-narrow #filter {
+    width: 100%;
+}
+
+Screen.-narrow #detail {
+    max-height: 50%;
+}

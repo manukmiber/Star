@@ -1,5 +1,149 @@
 # Changelog
 
+## 2026-08-21 — Fase 9: Verifikasi link, Space-Track sesuai dokumentasi, TUI, Termux
+
+### `astro links` — tes semua link, bukan cuma status code
+
+Fase 1 percaya status code dan tertipu `nssdc_planetary_factsheet` (HTTP 200
+tapi redirect ke halaman landing NASA). Link checker baru menuntut tiga hal:
+status < 400, tidak redirect keluar dari host **atau path** yang diminta, dan
+isi body benar-benar berbentuk format yang akan di-parse downloader.
+
+Downloader sekarang mendeklarasikan sendiri URL yang akan dimintanya
+(`_declare` / `declared_requests`), jadi yang diuji adalah target download
+sungguhan — bukan daftar URL terpisah yang gampang basi. Query berat dicek
+lewat kembaran murah (`top 5` untuk TAP, `limit=5` untuk SBDB, `limit/1`
+untuk Space-Track) dan hanya 32 KB pertama body yang dibaca: 74 link
+terverifikasi dengan biaya kilobyte.
+
+Temuan nyata saat dijalankan, dan perbaikannya:
+
+- OpenNGC/Messier ditandai rusak padahal sehat — CSV-nya delimiter `;`.
+  Sniffer sekarang mengenali `,` `;` tab `|`.
+- Kepler EB catalog ditandai rusak — file dibuka baris komentar `##`
+  sebelum header. Sniffer melewati preamble berkomentar.
+- Endpoint Space-Track menjawab 401 dan dihitung rusak; padahal 401 justru
+  bukti endpoint hidup dan terjaga. 401/403 kini status tersendiri.
+- VizieR (CDS) sempat 500 lalu normal lagi beberapa menit kemudian.
+  Ditambah retry, dan **kegagalan sisi server dipisahkan dari link rusak**:
+  5xx, timeout, atau pesan seperti "Unable to check the ADQL query!" /
+  "TAP service too busy" dilaporkan sebagai *server-side outage — retry
+  later*, bukan link mati. Pesan error server ikut ditampilkan, karena
+  "HTTP 400" saja tidak memberi tahu apa-apa.
+- Laporan single-source sempat menimpa laporan lengkap; sekarang di-merge.
+
+Dua bug lagi ketahuan setelah merge, saat checker dijalankan ke endpoint asli:
+
+- Target POST dicek pakai GET. USGS Gazetteer itu form POST-only, jadi
+  jawabannya 500 dan dilaporkan sebagai link rusak — salah kita, bukan
+  endpoint-nya. Sekarang method asli target yang dipakai.
+- Permalink yang redirect ke file aslinya (`ucs.org/media/11492` →
+  `.xlsx`) ikut kena aturan "redirect ganti path". Sekarang path yang
+  berubah hanya jadi masalah kalau cek isi juga gagal; kasus landing-page
+  yang jadi alasan aturan itu sudah ditangkap status RETIRED di registry.
+
+Selain itu `gaia_dr3_tap` punya 182 target yang isinya satu query ADQL
+dipotong per `random_index` — 66% dari seluruh target. Sekarang potongan
+seragam seperti itu dicek sebagai sampel merata (4 dari 182) dan laporannya
+menyebutkan itu; sumber yang target-nya memang beda-beda (10 benda
+`jpl_horizons`, 11 kelas `sbdb_query_full`) tetap dicek semua. `--full`
+untuk mengecek semuanya.
+
+Hasil run penuh tanpa sampling 2026-08-22 (52 sumber / **276 target, semuanya
+dicek**): **276/276 link berfungsi — 50 siap didownload**, 1 pensiun
+(`nssdc_planetary_factsheet`), 1 butuh kredensial (Space-Track).
+
+Run itu sekaligus jadi bukti dua hal. Pertama, semua 182 potongan Gaia lolos,
+jadi sampel 4-slice memang tidak menyembunyikan potongan rusak. Kedua, tiga
+sumber CDS/VizieR (`wds`, `sb9`, `msc`) yang di run sebelumnya ditandai
+"gangguan sisi server" ternyata lolos apa adanya saat dicek ulang — persis
+seperti yang diklaim klasifikasi itu. Angkanya bergerak antar-run karena CDS
+yang hilang-timbul, bukan karena link-nya.
+
+### Digabung dengan registry link dari Fase 8
+
+Cabang ini awalnya menambah lapisan deklarasi URL sendiri di
+`downloaders.py`. Fase 8 di `main` sudah menyelesaikan masalah yang sama
+dengan lebih rapi — `sources/links.py` sebagai data murni yang dikonsumsi
+downloader, `astro manifest`, dan frontend Cloudflare sekaligus. Saat merge,
+lapisan duplikat itu **dibuang**; `astro links` sekarang membaca `LINKS`,
+jadi tetap satu sumber kebenaran untuk semua konsumen.
+
+Fetcher TAP async (UWS) dan mirror `oec_gzip` yang sempat ditambah di sini
+ikut dibuang: `links.py` sudah menangani Gaia lewat potongan sync ber-MAXREC
+dengan deteksi pemotongan, yang lebih teruji daripada versi async saya.
+
+### Space-Track sesuai `space-track.org/documentation#/api`
+
+Ditulis ulang jadi klien penuh di `sources/spacetrack.py`. Dokumentasi
+resmi diambil dan dibaca ulang 2026-08-21; yang bersifat aturan ikut
+dipaksakan, bukan sekadar dicatat:
+
+- Login cookie `/ajaxauth/login`, logout `/ajaxauth/logout`. Sukses = JSON
+  string kosong; gagal = objek JSON. Cookie `chocolatechip` ikut diperiksa.
+- URL REST lengkap: controller (`basicspacedata`, `expandedspacedata`,
+  `fileshare`, `combinedopsdata`, `publicfiles`), action `query`/`modeldef`,
+  predikat berurutan, `orderby`, `limit/N,offset`, `predicates`, `distinct`,
+  `metadata`, `emptyresult/show`, `format`.
+- Operator `>` `<` `,` `--` `~~` `^` `null-val` `now-N` dipertahankan saat
+  percent-encoding; `>` jadi `%3E` persis seperti contoh di dokumentasi,
+  sementara `/` dalam nilai justru di-encode agar tidak merusak path.
+- **Throttle**: klien menahan diri di 25 req/menit dan 275 req/jam dengan
+  jeda minimal 2 detik — di bawah batas resmi 30/menit dan 300/jam.
+- **Frekuensi per class**: tabel data-retrieval di dokumentasi (GP 1/jam,
+  SATCAT & BOXSCORE 1/hari setelah 1700 UTC, CDM tiap 8 jam, GP_HISTORY
+  1/seumur-hidup, TIP 1/jam, DECAY 1/hari) dikodekan di `RETRIEVAL_POLICY`
+  dan dicek terhadap ledger di disk. Pull yang terlalu cepat dilewati
+  dengan alasan, bukan dikirim — melanggar aturan itu cara resmi untuk
+  kena suspend.
+- Batching comma-delimited untuk banyak objek, persis seperti yang diminta
+  dokumentasi ("do not send hundreds of individual /class/gp/ queries").
+- Query bawaan GP memakai pola yang disarankan dokumentasi:
+  `/decay_date/null-val/epoch/%3Enow-10/`.
+
+CLI baru: `astro spacetrack policy | query | modeldef`, dengan `--dry-run`
+yang mencetak URL tanpa mengirim apa pun.
+
+### TUI (`astro tui`)
+
+Textual, empat tab (Sumber / Link / Space-Track / Log). Tabel 46 sumber
+dengan filter teks + tier, panel detail yang menampilkan URL HTTP persis
+yang akan diminta sumber itu, pull dan cek-link jalan di worker sehingga UI
+tetap responsif. Panel Space-Track menampilkan status kredensial, batas
+yang dipatuhi, dan kapan tiap class boleh diambil lagi.
+
+Logika data dipisah ke `tui/state.py` (tanpa Textual) supaya bisa dites
+tanpa terminal; sisanya dites headless lewat Pilot, termasuk layout sempit.
+
+### Termux
+
+- **Dependency inti jadi 100% pure Python.** `pydantic` dibuang dari core
+  (`pydantic-core` adalah ekstensi Rust tanpa wheel Termux) dan diganti
+  dataclass stdlib; `polars`/`beautifulsoup4`/`jsonschema` pindah ke extra
+  `build`. Dependency yang ternyata tidak pernah diimpor (`pandas`,
+  `pyarrow`, `astropy`, `astroquery`, `tqdm`) dihapus. `beautifulsoup4`
+  yang selama ini terpakai tapi tidak terdaftar kini terdaftar.
+  Diverifikasi: `pip install .` di venv bersih tidak memasang satu pun
+  `.so`, dan `astro pull cneos_sentry` tetap menarik data sungguhan.
+- **Path data tidak lagi diturunkan dari `__file__`.** Kalau paket
+  di-install (hal normal di Termux), data akan mendarat di site-packages.
+  Sekarang: `$ASTRO_DL_HOME` → repo (kalau source checkout) →
+  `$XDG_DATA_HOME/astro-datalake` → `~/.local/share/astro-datalake`.
+- `astro build`/`astro verify` memberi instruksi pemasangan yang jelas
+  (termasuk catatan khusus Termux untuk polars) alih-alih ImportError.
+- `astro doctor` baru: Python, deteksi Termux, folder data + izin tulis,
+  ruang disk, paket opsional, lebar terminal, `TERM`, kredensial
+  Space-Track, dan jangkauan jaringan ke tiap penyedia data.
+- TUI beralih ke layout satu kolom di bawah 80 kolom (ukuran layar HP).
+- `scripts/termux-setup.sh` untuk pemasangan sekali jalan.
+
+### Tes
+
+75 tes lolos: `test_spacetrack.py` (bentuk URL vs dokumentasi, encoding
+operator, throttle, ledger, login sukses/gagal, 401, 429+retry, logout),
+`test_linkcheck.py` (sniffing tiap format, redirect landing-page,
+auth-wall, outage server vs link rusak, kembaran check-URL), dan
+`test_tui.py` (headless lewat Pilot, termasuk layout HP).
 ## 2026-08-21 — Fase 8: lengkapi semua link download + frontend Cloudflare
 
 ### Link registry (`astro_datalake/sources/links.py`)

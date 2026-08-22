@@ -20,15 +20,20 @@ from typing import Awaitable, Callable
 
 import httpx
 
+import logging
+
 from .core.config import settings
 from .core.http import get, post
+from .sources import spacetrack
 from .sources.links import (
     LINKS,
-    SPACETRACK_LOGIN,
     DownloadTarget,
     LinkStatus,
     SourceLinks,
 )
+
+
+LOGGER = logging.getLogger("astro_datalake.downloaders")
 
 
 class TruncatedResultError(RuntimeError):
@@ -95,29 +100,64 @@ def _plain_fetcher(links: SourceLinks) -> Fetcher:
 
 
 def _spacetrack_fetcher(links: SourceLinks) -> Fetcher:
-    """Log in once, then pull each query URL with the resulting session cookie."""
+    """Pull Space-Track's targets over one throttled, policy-checked session.
+
+    The URLs still come from `sources/links.py` like every other source; what
+    this adds is the part of https://www.space-track.org/documentation#/api
+    that is a rule rather than a URL — see `sources/spacetrack.py`:
+
+      * one login, one logout, session cookie verified;
+      * client-side throttling below the documented 30/minute and 300/hour;
+      * the per-class retrieval-frequency table, checked against an on-disk
+        ledger, so a class pulled too recently is skipped with a reason
+        instead of re-requested. Exceeding those rates is the documented way
+        to get an account suspended.
+    """
 
     async def fetch(client: httpx.AsyncClient) -> list[tuple[str, bytes]]:
         user, password = settings.spacetrack_user, settings.spacetrack_password
         if not user or not password:
             raise RuntimeError(
-                "Space-Track needs ASTRO_DL_SPACETRACK_USER and "
-                "ASTRO_DL_SPACETRACK_PASS to be set."
+                f"Space-Track needs {spacetrack.ENV_IDENTITY} and "
+                f"{spacetrack.ENV_PASSWORD} to be set."
             )
-        login = await post(
-            client,
-            SPACETRACK_LOGIN,
-            data={"identity": user, "password": password},
-            timeout=60.0,
+
+        ledger = spacetrack.RetrievalLedger(
+            settings.raw_dir / "spacetrack" / "retrieval-ledger.json"
         )
-        cookies = login.cookies
-        if not cookies:
-            raise RuntimeError(
-                "Space-Track login returned no session cookie — check the credentials."
-            )
-        results = []
+        due: list[DownloadTarget] = []
         for target in links.targets:
-            results.append(await fetch_target(client, target, cookies=cookies))
+            class_name = spacetrack.class_name_from_url(target.url)
+            allowed, reason = ledger.check(class_name)
+            if allowed:
+                due.append(target)
+            else:
+                LOGGER.info("Space-Track: skipping per documented retrieval rate — %s", reason)
+        if not due:
+            return []
+
+        session = spacetrack.SpaceTrackClient(
+            user,
+            password,
+            client=client,
+            user_agent=settings.user_agent,
+        )
+        results: list[tuple[str, bytes]] = []
+        try:
+            await session.login()
+            for target in due:
+                LOGGER.info("Space-Track GET %s", target.resolved_url)
+                response = await session.request_url(target.resolved_url, timeout=target.timeout)
+                content = response.content
+                _reject_truncated(target, content)
+                results.append((target.filename, content))
+                ledger.record(
+                    spacetrack.class_name_from_url(target.url),
+                    target.resolved_url,
+                    len(content),
+                )
+        finally:
+            await session.logout()
         return results
 
     return fetch

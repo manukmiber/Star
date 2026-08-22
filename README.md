@@ -26,19 +26,163 @@ structure under `data/`.
 ## Setup
 
 ```bash
-uv sync
+uv sync                 # core + dev
+uv sync --extra build   # also polars / BeautifulSoup / jsonschema (for build + verify)
 ```
+
+On a phone, see [Termux](#termux-android) below.
 
 ## CLI
 
 ```bash
+astro doctor               # check this machine: paths, disk, packages, terminal, network
+astro links                # test every download link, report what's ready to pull
 astro pull <source>        # pull one source (see `astro status` for keys)
 astro pull --all --tier 1  # pull every source in a tier
 astro build                # normalize raw -> processed folder structure
 astro verify               # checksum / row-count / empty-folder / schema checks
 astro status               # summary: what's been pulled, sizes, dates
+astro tui                  # interactive terminal UI
+astro spacetrack policy    # Space-Track presets + retrieval-rate status
 astro manifest             # regenerate public/manifest.json (the download index)
 ```
+
+## TUI
+
+`astro tui` opens a Textual UI over the same machinery the CLI uses — it
+calls `DOWNLOAD_PLAN` and `linkcheck` directly, so the two can't drift apart.
+
+```
+┌ Sumber ┬ Link ┬ Space-Track ┬ Log ┐
+│ 52 sources, tier/status/link-verdict/size, live filter and tier picker    │
+│ detail pane shows the exact HTTP requests that source will issue          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+| Key | Action |
+| --- | --- |
+| `space` | select / deselect the highlighted source |
+| `a` / `c` | select every ready source in view / clear the selection |
+| `p` | pull the selection (or the highlighted source) |
+| `l` | re-check links for the selection (or everything in view) |
+| `s` | pull Space-Track |
+| `/` | focus the search box |
+| `r` | reload state from disk |
+| `q` | quit |
+
+Long jobs run in Textual workers, so the table keeps repainting while a
+multi-hundred-megabyte pull is in flight. Below 80 columns the layout
+switches to a stacked, single-column mode meant for a phone.
+
+## Link checking
+
+`astro links` is stricter than a status-code ping, because a status code
+lies: `nssdc_planetary_factsheet` answers `200` while redirecting to a
+generic NASA landing page with none of the promised data. A link counts as
+working only when it answers < 400, doesn't redirect away from the host *or
+path* we asked for, and returns a body that actually looks like the format
+the downloader will parse (JSON parses, CSV has a delimited header row —
+semicolons and `#`-comment preambles included — gzip has its magic number,
+TLE has 69-character element lines).
+
+Failures are split by fault. A 5xx, a timeout, or a message like CDS's
+"Unable to check the ADQL query!" is reported as a **server-side outage**
+("retry later"), not a broken link — those URLs are demonstrably correct and
+answer fine minutes later. Only a genuine 404, a bad redirect, or wrong
+content is called broken.
+
+Targets come from `sources/links.py`, so what gets verified is exactly what
+`astro pull`, `astro manifest` and the website will fetch. Each check uses a
+cheap twin derived from the target's own parameters — an ADQL `top 5`, a
+`MAXREC`/`limit` cap — and reads at most 32 KB of the body, so a full run
+costs kilobytes rather than gigabytes. POST targets are checked with POST
+(the USGS Gazetteer is a POST-only search form; GETting it just returns 500).
+
+`gaia_dr3_tap` is 182 targets that are one ADQL query sliced by
+`random_index`; those are checked as a spread of four rather than all 182,
+and the report says so. Sources whose targets are genuinely different
+requests — `jpl_horizons`' ten bodies, `sbdb_query_full`'s eleven orbit
+classes — are always checked in full. `--full` checks everything.
+
+Results land in `data/_catalog/link-check.json`, merged rather than
+overwritten so checking one source doesn't discard what's known about the
+rest.
+
+Latest full run (2026-08-22, `--full`, all 52 sources / 276 targets):
+**276/276 links working — 50 ready to download**, 1 retired
+(`nssdc_planetary_factsheet`, superseded by `le_systeme_solaire` +
+`jpl_horizons`) and 1 behind a credential wall (Space-Track).
+
+That run doubles as a check on the sampling above: all 182 Gaia chunks pass,
+so the four-slice spread was not hiding a bad one. It also settles the
+CDS/VizieR sources — an earlier run had `wds`, `sb9` and `msc` flagged as a
+server-side outage rather than broken links, and on re-check they pass
+unchanged. That is the classification doing its job: "URL looks right, retry
+later" was the correct call, and the number moves between runs because CDS
+does, not because the links do.
+
+## Space-Track
+
+Implemented against [the documented API](https://www.space-track.org/documentation#/api):
+cookie login at `/ajaxauth/login`, REST query URLs
+(`/basicspacedata/query/class/<class>/<predicate>/<value>/.../format/json`),
+`>` `<` `,` `--` `~~` `^` `null-val` `now-N` operators, `/modeldef/` for
+predicate definitions, and logout on the way out.
+
+The guidelines are enforced, not just read:
+
+- **Throttling** — the client holds itself to 25 requests/minute and
+  275/hour with a 2-second floor between requests, under the documented
+  ceilings of 30/minute and 300/hour.
+- **Retrieval frequency** — the documentation's per-class rate table (GP
+  once/hour, SATCAT and BOXSCORE once/day after 1700 UTC, CDM every 8 hours,
+  GP_HISTORY once per lifetime, …) is encoded in `RETRIEVAL_POLICY` and
+  checked against an on-disk ledger. A too-soon pull is skipped with a
+  reason rather than sent — violating those rates is the documented way to
+  get an account suspended.
+- **Batching** — multiple objects go out as one comma-delimited request,
+  which the docs ask for explicitly.
+
+```bash
+export ASTRO_DL_SPACETRACK_USER='your-email'      # free account at space-track.org
+export ASTRO_DL_SPACETRACK_PASS='your-password'
+
+astro spacetrack policy                            # what's due, what's rate-limited
+astro spacetrack query gp --norad 25544,43873 --format tle
+astro spacetrack query --preset satcat --save      # store under data/raw/ with a checksum
+astro spacetrack modeldef gp                       # the API's own predicate list
+astro spacetrack query decay -P MSG_EPOCH='>now-1' --dry-run   # print the URL, send nothing
+```
+
+Without credentials the source is skipped, never faked.
+
+## Termux (Android)
+
+```bash
+pkg install git
+git clone <repo> && cd Star
+bash scripts/termux-setup.sh
+```
+
+The core install is **100% pure Python** — no compiler, no Rust toolchain,
+no native wheels. `astro pull`, `astro links`, `astro status`, `astro tui`,
+`astro doctor` and `astro spacetrack` all run on a stock `pkg install
+python`. (Settings deliberately use a stdlib dataclass instead of pydantic,
+whose `pydantic-core` has no Termux wheel.)
+
+`astro build` and `astro verify` additionally need polars / BeautifulSoup /
+jsonschema — the `build` extra. polars has no prebuilt Termux wheel, so
+either compile it (`pkg install rust binutils && pip install
+'astro-datalake[build]'`) or run `astro build` elsewhere and copy `data/`
+over.
+
+Data location resolves in this order: `$ASTRO_DL_HOME`, then the repo when
+running from a source checkout, then `$XDG_DATA_HOME/astro-datalake` or
+`~/.local/share/astro-datalake`. That last step matters once the package is
+pip-installed — without it, catalogues would land inside site-packages.
+Run `astro doctor` to see what this device resolved to, plus free disk,
+terminal width and network reachability.
+
 
 ## Download links
 
@@ -192,5 +336,8 @@ Project is built phase by phase (see CHANGELOG.md). Fase 5 closed the gaps
 REPORT.md §5 listed as unbuilt — everything there is built except
 asteroid-family membership, which still needs a proper-elements catalogue.
 Fase 8 completed the download-link registry for all 52 sources and added the
-Cloudflare frontend. See `REPORT.md` for object counts, sizes, sources and
-what remains open.
+Cloudflare frontend, then added `astro links` (live verification of every
+registered target), a Space-Track client that follows the documented API
+rules, the TUI, and a pure-Python core that installs on Termux. See
+`REPORT.md` for object counts, sizes, sources and what remains open, and
+`data/_catalog/link-check.json` for the latest link-verification run.

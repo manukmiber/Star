@@ -1,6 +1,6 @@
 {
   "manifest_version": 1,
-  "generated_at": "2026-08-21T20:37:38Z",
+  "generated_at": "2026-08-22T04:15:55Z",
   "project": "astro-datalake",
   "counts": {
     "sources": 52,
@@ -3286,13 +3286,13 @@
       "targets": [
         {
           "filename": "gp.json",
-          "url": "https://www.space-track.org/basicspacedata/query/class/gp/orderby/NORAD_CAT_ID/format/json",
+          "url": "https://www.space-track.org/basicspacedata/query/class/gp/decay_date/null-val/epoch/%3Enow-10/orderby/NORAD_CAT_ID/format/json",
           "method": "GET",
           "media_type": "application/json",
           "timeout_seconds": 900.0,
           "browser_fetchable": true,
-          "curl": "curl -L --compressed -o 'gp.json' 'https://www.space-track.org/basicspacedata/query/class/gp/orderby/NORAD_CAT_ID/format/json'",
-          "note": "Current GP element set for every catalogued object."
+          "curl": "curl -L --compressed -o 'gp.json' 'https://www.space-track.org/basicspacedata/query/class/gp/decay_date/null-val/epoch/%3Enow-10/orderby/NORAD_CAT_ID/format/json'",
+          "note": "Current GP element set for on-orbit objects. The predicates are the ones the API documentation asks for: 'Add /decay_date/null-val/epoch/%3Enow-10/ to the URL to ensure that you only retrieve propagable ephemerides for on-orbit objects.'"
         },
         {
           "filename": "satcat.json",
@@ -3311,7 +3311,8 @@
           "media_type": "application/json",
           "timeout_seconds": 900.0,
           "browser_fetchable": true,
-          "curl": "curl -L --compressed -o 'decay.json' 'https://www.space-track.org/basicspacedata/query/class/decay/orderby/NORAD_CAT_ID/format/json'"
+          "curl": "curl -L --compressed -o 'decay.json' 'https://www.space-track.org/basicspacedata/query/class/decay/orderby/NORAD_CAT_ID/format/json'",
+          "note": "Decay messages. The docs cap this class at one pull per day and ask that you store what you download rather than re-fetching it; the downloader enforces both through its retrieval ledger."
         }
       ],
       "unfetchable_reason": "needs credentials: ASTRO_DL_SPACETRACK_USER, ASTRO_DL_SPACETRACK_PASS",
@@ -3319,7 +3320,7 @@
         "ASTRO_DL_SPACETRACK_USER",
         "ASTRO_DL_SPACETRACK_PASS"
       ],
-      "notes": "Free account required. The downloader POSTs identity/password to https://www.space-track.org/ajaxauth/login to get a session cookie, then GETs the query URLs above. Without both env vars set the source is skipped, never half-attempted. Requires a free account. SKIP if ASTRO_DL_SPACETRACK_USER/PASS are not set; record the skip in CHANGELOG.md."
+      "notes": "Free account required. The downloader POSTs identity/password to https://www.space-track.org/ajaxauth/login to get a session cookie, GETs the query URLs above, then logs out. Without both env vars set the source is skipped, never half-attempted. Requests are throttled below the documented ceilings (<30/minute, <300/hour) and each class is held to its documented retrieval rate \u2014 GP hourly, SATCAT and BOXSCORE daily after 1700 UTC \u2014 via an on-disk ledger. See sources/spacetrack.py. Requires a free account. SKIP if ASTRO_DL_SPACETRACK_USER/PASS are not set; record the skip in CHANGELOG.md."
     },
     {
       "key": "ucs_satellite_db",

@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .core.config import settings
+from .core.config import settings, source_checkout_root
 from .downloaders import DOWNLOAD_PLAN, unfetchable_reason
 from .sources.links import LINKS, DownloadTarget
 from .sources.registry import SOURCES
@@ -103,8 +103,25 @@ def build_manifest() -> dict[str, Any]:
     }
 
 
+class NoSourceCheckoutError(RuntimeError):
+    """`public/manifest.json` is a repo artifact and there's no repo here."""
+
+
 def default_manifest_path() -> Path:
-    return settings.project_root / "public" / "manifest.json"
+    """Where the committed manifest lives — in the checkout, not the data dir.
+
+    The manifest is source, not output: it's committed and deployed to
+    Cloudflare as-is. Resolving it against the data directory would put it
+    somewhere nothing reads from once the package is pip-installed.
+    """
+    checkout = source_checkout_root()
+    if checkout is None:
+        raise NoSourceCheckoutError(
+            "public/manifest.json belongs to the source checkout, and this looks "
+            "like an installed copy. Run `astro manifest` from a clone of the "
+            "repository, or pass --output to choose a path explicitly."
+        )
+    return checkout / "public" / "manifest.json"
 
 
 def render_manifest(manifest: dict[str, Any] | None = None) -> str:
