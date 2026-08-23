@@ -96,6 +96,14 @@ README.md-nya (`astro verify` gagal kalau ada yang hilang — 33.062 folder terc
 > `le_systeme_solaire`. Sekarang 45 dari 47 sumber bisa ditarik; yang tersisa
 > hanya `nssdc_planetary_factsheet` (endpoint-nya memang sudah mati) dan
 > `spacetrack` (butuh akun). Alasan per sumber ada di CHANGELOG.md.
+>
+> **Catatan 2026-08-23:** `spacetrack` sudah tidak lagi jadi pengecualian.
+> Dengan akun Space-Track dan `ASTRO_DL_SPACETRACK_USER`/`PASS` diset,
+> `astro pull spacetrack` ditarik penuh dan diverifikasi: `gp.json` 68.997
+> baris, `satcat.json` 70.355 baris, `decay.json` 140.824 baris (153 MB).
+> Jadi satu-satunya sumber yang benar-benar tidak bisa ditarik tinggal
+> `nssdc_planetary_factsheet`. Detail, termasuk dua ketidakcocokan downloader
+> `main` dengan dokumentasi API Space-Track, ada di CHANGELOG.md.
 
 | Sumber | Alasan |
 |---|---|

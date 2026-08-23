@@ -1,5 +1,93 @@
 # Changelog
 
+## 2026-08-23 — Audit link + verifikasi Space-Track dengan akun asli
+
+Bukan fase baru: satu putaran pemeriksaan atas apa yang sudah ada di `main`.
+Pemilik repo memberi kredensial Space-Track, jadi satu-satunya sumber yang
+sampai sekarang belum pernah benar-benar ditarik akhirnya bisa diuji.
+
+### Space-Track: jalan, dan datanya nyata
+
+`astro pull spacetrack` di `main` (dengan `ASTRO_DL_SPACETRACK_USER` /
+`ASTRO_DL_SPACETRACK_PASS` diset) berhasil penuh — login POST → cookie sesi →
+tiga query:
+
+| File | Baris | Ukuran |
+|---|---:|---:|
+| `gp.json` | 68.997 | 78,4 MB |
+| `satcat.json` | 70.355 | 33,0 MB |
+| `decay.json` | 140.824 | 42,3 MB |
+
+Dicek isinya, bukan cuma status HTTP: NORAD 25544 = `ISS (ZARYA)`, epoch
+2026-08-22T22:50:50Z, mean motion 15,49577746. Jadi baris `spacetrack` di
+REPORT.md §4 ("kredensial tidak tersedia") sudah tidak berlaku, dan hitungan
+sumber yang bisa ditarik naik dari 50/52 jadi **51 dari 52** — sisa satu
+`nssdc_planetary_factsheet` yang memang sudah pensiun.
+
+### Dua catatan soal downloader Space-Track di `main`
+
+Keduanya bukan link rusak, tapi ketidakcocokan dengan dokumentasi resmi
+space-track.org/documentation#/api, dan keduanya sudah diperbaiki di PR #7
+(cabang `claude/space-track-downloader-tui-t56i5i`) yang masih terbuka:
+
+- **Query GP kelebihan isi.** URL di `links.py` cuma
+  `/class/gp/orderby/NORAD_CAT_ID/format/json`, sementara dokumentasinya minta
+  `/decay_date/null-val/epoch/%3Enow-10/` supaya yang kembali hanya efemeris
+  yang masih bisa dipropagasi. Selisihnya diukur, bukan ditebak: **68.997
+  baris tanpa predikat vs 31.529 dengan predikat** — jadi 37.468 baris di
+  antaranya elset basi atau objek yang sudah jatuh.
+- **Tidak ada rem laju pengambilan.** Dokumentasi Space-Track menetapkan
+  <30 request/menit, <300/jam, dan laju per-kelas (GP tiap jam, SATCAT sekali
+  sehari setelah 1700 UTC, dst.); melampauinya adalah cara resmi bikin akun
+  ditangguhkan. Versi di `main` menarik ketiga file tiap kali dipanggil tanpa
+  ledger. Versi di PR #7 melewati `satcat` dengan alasan tercetak ketika
+  dijalankan pukul 15.05 UTC — perilaku yang benar menurut dokumentasi.
+
+### Audit link: tidak ada yang tertinggal
+
+- `sources/links.py` **52 sumber / 275 target**, `public/manifest.json`
+  **52 sumber / 275 target** — sinkron, dan `astro manifest --check` beserta
+  `test_committed_manifest_is_not_stale` lulus.
+- Tidak ada sumber di `registry.py` yang tidak punya entri link, dan
+  sebaliknya (`set(SOURCES) ^ set(LINKS)` kosong).
+- Semua URL yang ditulis builder ke `metadata.json` sebagai `source_url`
+  dicocokkan balik ke registry: semuanya masih sama. Satu yang tidak persis
+  cocok, `https://ssd.jpl.nasa.gov/sats/` di `build/solar_system.py`, memang
+  sengaja — itu halaman induk yang mencakup tiga sumber `jpl_sat_*` sekaligus,
+  dan dicek hidup (HTTP 200).
+- `pytest` di `main`: 212 lulus.
+
+Dijalankan juga `astro links` dari cabang PR #7 (satu-satunya tempat pemeriksa
+link itu ada) dengan kredensial Space-Track terpasang: **45 siap, 6 curiga,
+1 rusak, 0 butuh kredensial, 0 tanpa downloader**; 87 dari 98 link yang
+diperiksa berfungsi. Satu-satunya yang "rusak" adalah
+`nssdc_planetary_factsheet` yang memang sudah ditandai pensiun, dan keenam
+yang "curiga" semuanya outage TAPVizieR/ESA di bawah ini. `spacetrack` naik
+dari "butuh kredensial" jadi "siap".
+
+### TAPVizieR sedang kelebihan beban (bukan link rusak)
+
+Lima sumber yang lewat `tapvizier.cds.unistra.fr` — `wds_catalog`,
+`sb9_catalog`, `msc_catalog`, `atnf_pulsar_catalog`, `blackcat_bh_transients`
+— balas HTTP 503 berulang kali hari ini. Isi badan responsnya menjelaskan
+sendiri: *"TAP service too busy! No connection available for the moment. You
+should try later or create an asynchronous query"*. Jadi ini outage sisi
+server, URL-nya benar; putaran ulang beberapa menit kemudian sebagian sudah
+lolos lagi (`msc_catalog` 2/4). Endpoint ASU VizieR di host yang sama
+(`vizier.cds.unistra.fr/viz-bin/asu-tsv`) menjawab 200 selama TAP-nya 503 —
+kalau flapping ini terus mengganggu, ASU atau TAP asinkron (yang disarankan
+pesan servernya sendiri) layak dipertimbangkan sebagai fallback.
+
+### Sumber model 3D masih menggantung di PR #3
+
+Delapan sumber — `nasa_3d_resources`, `pds_sbn_shape_models`,
+`damit_shape_models`, `nasa_science_3d`, `nasa_svs_texture_kits`,
+`nasa_blue_marble_textures`, `solarsystemscope_textures`,
+`usgs_planetary_mosaics` — hanya ada di cabang PR #3 dan belum masuk `main`.
+Cabang itu juga tertinggal lima commit di belakang `main` (bercabang di
+`48b0fdf`, sebelum PR #4 dan PR #5 mendarat), jadi butuh merge `main` dulu
+sebelum bisa digabung.
+
 ## 2026-08-21 — Fase 8: lengkapi semua link download + frontend Cloudflare
 
 ### Link registry (`astro_datalake/sources/links.py`)
