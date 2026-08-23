@@ -67,6 +67,15 @@ fact-sheet path to a generic landing page; `le_systeme_solaire` and
 `jpl_horizons` cover the same parameters) and `spacetrack` (free account
 required; set `ASTRO_DL_SPACETRACK_USER` / `ASTRO_DL_SPACETRACK_PASS`).
 
+`spacetrack` was verified end to end on 2026-08-23 with a real account:
+`gp.json` 68,997 rows, `satcat.json` 70,355 rows, `decay.json` 140,824 rows.
+Two things to know before pointing it at your own account — Space-Track's API
+docs ask for `/decay_date/null-val/epoch/%3Enow-10/` on the GP query (without
+it you get 68,997 rows instead of the 31,529 propagable ones), and they cap
+retrieval at <30 requests/minute, <300/hour, with per-class rates (GP hourly,
+SATCAT once a day after 1700 UTC). Neither is enforced here yet; PR #7 adds
+both. Exceeding the documented rates is how accounts get suspended.
+
 ### API keys
 
 `le_systeme_solaire` needs `Authorization: Bearer <key>`. A working key is
